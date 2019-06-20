@@ -1,8 +1,15 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app").
 
-## Available Scripts
+## Build Instructions
 
-In the project directory, you can run:
+Install React-Plotly, Plotly.js, and Ploty.js-dist
+### `npm install`
+### `npm install react-plotly.js plotly.js`
+### `npm install plotly.js-dist`
+
+## Run Program
+
+In the project directory, run:
 
 ### `npm start`
 
@@ -11,6 +18,8 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br>
 You will also see any lint errors in the console.
+
+## Other Available Scripts
 
 ### `npm test`
 

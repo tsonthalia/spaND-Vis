@@ -1,6 +1,5 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import Plotly from 'plotly.js-dist';
 
 class App extends React.Component {
   constructor(props) {
@@ -88,44 +87,16 @@ class App extends React.Component {
                         self.state.leveltoId = lvl;
                         self.setState({leveltoId: self.state.leveltoId});
 
-                        // for (var i = 0; i < lvl.length; i++) {
-                        //   var xAtLvl = "";
-                        //   var yAtLvl = "";
-                        //   var zAtLvl = "";
-                        //
-                        //   for (var j = 0; j < lvl[i].length; j++) {
-                        //     xAtLvl += x[lvl[i][j]] + ","
-                        //     yAtLvl += y[lvl[i][j]] + ","
-                        //     zAtLvl += z[lvl[i][j]] + ","
-                        //   }
-                        //
-                        //   // var trace = {
-                        //   //   x: xAtLvl.split(','), y: yAtLvl.split(','), z: zAtLvl.split(','),
-                        //   //   mode: 'markers',
-                        //   //   marker: {
-                        //   //     size: self.state.size,
-                        //   //     color: "#"+((1<<24)*Math.random()|0).toString(16),
-                        //   //     line: {
-                        //   //       color: 'rgb(217, 217, 217)',
-                        //   //       width: 0.5
-                        //   //     },
-                        //   //     opacity: self.state.opacity
-                        //   //   },
-                        //   //   type: 'scatter3d',
-                        //   //   name: 'Value ' + i
-                        //   // };
-                        //   //
-                        //   // self.state.traces.push(trace);
-                        // }
-
                         var x = [[[]]];
                         var y = [[[]]];
                         var z = [[[]]];
 
-                        var allText = rawFile.responseText.substr(14);
+                        var allText2 = rawFile.responseText.substr(14);
 
-                        for (var i = 0; i < allText.split('\n').length-1; i++) {
-                          var arr = allText.split('\n')[i].split(' ');
+                        // eslint-disable-next-line
+                        for (var i = 0; i < allText2.split('\n').length-1; i++) {
+                          var arr = allText2.split('\n')[i].split(' ');
+                          // eslint-disable-next-line
                           var id = arr[3].split(';')[1]
 
                           if (x[0][id] === undefined) {
@@ -139,6 +110,7 @@ class App extends React.Component {
                           z[0][id].push(arr[3].split(';')[0]);
                         }
 
+                        // eslint-disable-next-line
                         for (var i = 1; i < lvl.length; i++) {
                           for (var j = x[i-1].length-1; j >= 0; j--) {
                             if (x[i] === undefined) {
@@ -164,7 +136,9 @@ class App extends React.Component {
                         self.state.y = y;
                         self.state.z = z;
 
+                        // eslint-disable-next-line
                         for (var j = 0; j < x.length; j++) {
+                          // eslint-disable-next-line
                           for (var i = 0; i < x[j].length; i++) {
                             var tempName = "";
                             var tempShape = "";
@@ -246,10 +220,12 @@ class App extends React.Component {
 
     for (var i = 0; i < this.state.leveltoId[event.target.id].length; i++) {
       if (this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]] !== undefined) {
+        // eslint-disable-next-line
         this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]].marker.opacity = event.target.value;
       }
     }
 
+    // eslint-disable-next-line
     this.state.opacity[event.target.id] = event.target.value;
     this.setState({opacity: this.state.opacity});
   }

@@ -230,31 +230,8 @@ class App extends React.Component {
     this.setState({opacity: this.state.opacity});
   }
 
-  // changeOpacity0(event) {
-  //   this.state.traces[0].marker.opacity = event.target.value;
-  //
-  //   this.state.opacity[0] = event.target.value;
-  //   this.setState({opacity: this.state.opacity});
-  // }
-  //
-  // changeOpacity1(event) {
-  //   this.state.traces[1].marker.opacity = event.target.value;
-  //
-  //   this.state.opacity[1] = event.target.value;
-  //   this.setState({opacity: this.state.opacity});
-  // }
-  //
-  // changeOpacity2(event) {
-  //   this.state.traces[2].marker.opacity = event.target.value;
-  //
-  //   this.state.opacity[2] = event.target.value;
-  //   this.setState({opacity: this.state.opacity});
-  // }
-
   changeLevel(event) {
     this.setState({level: event.target.value})
-
-
   }
 
   render() {
@@ -308,21 +285,5 @@ class App extends React.Component {
     }
   }
 }
-
-// Opacity of Level 0: {this.state.opacity[0]}
-// <br/>
-// <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[0]} className="slider" id="myRange" onChange={this.changeOpacity0.bind(this)}/>
-// <br/>
-// <br/>
-// Opacity of Level 1: {this.state.opacity[1]}
-// <br/>
-// <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[1]} className="slider" id="myRange" onChange={this.changeOpacity1.bind(this)}/>
-// <br/>
-// <br/>
-// Opacity of Level 2: {this.state.opacity[2]}
-// <br/>
-// <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[2]} className="slider" id="myRange" onChange={this.changeOpacity2.bind(this)}/>
-// <br/>
-// <br/>
 
 export default App;

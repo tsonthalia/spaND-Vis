@@ -8,6 +8,7 @@ In the project directory, run:
 ### `npm install react-plotly.js plotly.js`
 ### `npm install plotly.js-dist`
 
+***
 
 ## Run Program
 
@@ -21,6 +22,7 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 The page will reload if you make edits.<br>
 You will also see any lint errors in the console.
 
+***
 
 ## Other Available Scripts
 
@@ -49,6 +51,7 @@ Instead, it will copy all the configuration files and the transitive dependencie
 
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
+***
 
 ## Learn More
 

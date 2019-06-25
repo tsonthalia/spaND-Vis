@@ -10,7 +10,7 @@ class App extends React.Component {
       height: 0,
       traces: [[]],
       size: 5,
-      opacity: [0.8,0.8,0.8],
+      opacity: [],
       level: 0,
       leveltoId: [[]],
       childToParent: [],
@@ -49,6 +49,8 @@ class App extends React.Component {
                       }
                   }
               }
+
+              alert("Got Merging Data");
               merging3d.send(null);
 
               var cluster3d = new XMLHttpRequest();
@@ -84,33 +86,46 @@ class App extends React.Component {
                           idtoLvl[curr[0]].push(curr[1]);
                         }
 
+                        alert("Got ID to Level");
+
                         self.state.leveltoId = lvl;
                         self.setState({leveltoId: self.state.leveltoId});
+
+                        // eslint-disable-next-line
+                        for (var i = 0; i < self.state.leveltoId.length; i++) {
+                         self.state.opacity.push(0.8);
+                        }
+
+                        self.setState({opacity: self.state.opacity});
 
                         var x = [[[]]];
                         var y = [[[]]];
                         var z = [[[]]];
 
-                        var allText2 = rawFile.responseText.substr(14);
+                        var allText2 = rawFile.responseText;
 
                         // eslint-disable-next-line
-                        for (var i = 0; i < allText2.split('\n').length-1; i++) {
+                        for (var i = 2; i < allText2.split('\n').length-1; i++) {
                           var arr = allText2.split('\n')[i].split(' ');
-                          // eslint-disable-next-line
-                          var id = arr[3].split(';')[1]
+                          if (arr[3] !== undefined) {
+                            // eslint-disable-next-line
+                            var id = arr[3].split(';')[1]
 
-                          if (x[0][id] === undefined) {
-                            x[0][id] = [];
-                            y[0][id] = [];
-                            z[0][id] = [];
+                            if (x[0][id] === undefined) {
+                              x[0][id] = [];
+                              y[0][id] = [];
+                              z[0][id] = [];
+                            }
+
+                            x[0][id].push(arr[1]);
+                            y[0][id].push(arr[2]);
+                            z[0][id].push(arr[3].split(';')[0]);
                           }
-
-                          x[0][id].push(arr[1]);
-                          y[0][id].push(arr[2]);
-                          z[0][id].push(arr[3].split(';')[0]);
                         }
 
-                        // eslint-disable-next-line
+                        alert("Got Initial Plot View");
+
+                        //eslint-disable-next-line
                         for (var i = 1; i < lvl.length; i++) {
                           for (var j = x[i-1].length-1; j >= 0; j--) {
                             if (x[i] === undefined) {
@@ -119,18 +134,28 @@ class App extends React.Component {
                               z[i] = [[]];
                             }
 
-                            if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
-                              if (x[i][self.state.childToParent[j]] === undefined) {
-                                x[i][self.state.childToParent[j]] = [];
-                                y[i][self.state.childToParent[j]] = [];
-                                z[i][self.state.childToParent[j]] = [];
+                            if (i !== 1) {
+                              if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
+                                if (x[i][self.state.childToParent[j]] === undefined) {
+                                  x[i][self.state.childToParent[j]] = [];
+                                  y[i][self.state.childToParent[j]] = [];
+                                  z[i][self.state.childToParent[j]] = [];
+                                }
+                                x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
+                                y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
+                                z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
                               }
-                              x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
-                              y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
-                              z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+                            } else {
+                              x[1] = x[0];
+                              y[1] = y[0];
+                              z[1] = z[0];
+
+                              console.log("equal");
                             }
                           }
                         }
+
+                        alert("Generated All Plot Views");
 
                         self.state.x = x;
                         self.state.y = y;
@@ -154,31 +179,36 @@ class App extends React.Component {
                               tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                             }
 
-                            var trace = {
-                              x: x[j][i], y: y[j][i], z: z[j][i],
-                              mode: 'markers',
-                              //legendgroup: 'Level ' + idtoLvl[i],
-                              marker: {
-                                size: self.state.size,
-                                symbol: tempShape,
-                                color: tempColor,
-                                //color: "#"+((1<<24)*Math.random()|0).toString(16),
-                                line: {
-                                  color: 'rgb(217, 217, 217)',
-                                  width: 0.5
+                            console.log(idtoLvl[i] + ", " + j);
+                            if (idtoLvl[i] >= j) {
+                              var trace = {
+                                x: x[j][i], y: y[j][i], z: z[j][i],
+                                mode: 'markers',
+                                //legendgroup: 'Level ' + idtoLvl[i],
+                                marker: {
+                                  size: self.state.size,
+                                  symbol: tempShape,
+                                  color: tempColor,
+                                  //color: "#"+((1<<24)*Math.random()|0).toString(16),
+                                  line: {
+                                    color: 'rgb(217, 217, 217)',
+                                    width: 0.5
+                                  },
+                                  opacity: self.state.opacity
                                 },
-                                opacity: self.state.opacity
-                              },
-                              type: 'scatter3d',
-                              name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
-                            };
+                                type: 'scatter3d',
+                                name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
+                              };
 
-                            if (self.state.traces[j] === undefined) {
-                              self.state.traces[j] = [];
+                              if (self.state.traces[j] === undefined) {
+                                self.state.traces[j] = [];
+                              }
+                              self.state.traces[j].push(trace);
                             }
-                            self.state.traces[j].push(trace);
                           }
                         }
+
+                        alert("Created Plot Traces");
 
 
                         self.setState({traces: self.state.traces});
@@ -216,8 +246,6 @@ class App extends React.Component {
   }
 
   changeOpacity(event) {
-    console.log(event.target.id);
-
     for (var i = 0; i < this.state.leveltoId[event.target.id].length; i++) {
       if (this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]] !== undefined) {
         // eslint-disable-next-line
@@ -232,6 +260,24 @@ class App extends React.Component {
 
   changeLevel(event) {
     this.setState({level: event.target.value})
+  }
+
+  reset() {
+    for (var i = 0; i < this.state.leveltoId.length; i++) {
+      for (var j = 0; j < this.state.leveltoId[i].length; j++) {
+        //console.log(this.state.traces[this.state.level]);
+        if (this.state.traces[i][this.state.leveltoId[i][j]] !== undefined) {
+          // eslint-disable-next-line
+          this.state.traces[i][this.state.leveltoId[i][j]].marker.opacity = 0.8;
+          // eslint-disable-next-line
+          this.state.opacity[j] = 0.8;
+        }
+      }
+    }
+
+    this.setState({opacity: this.state.opacity});
+    this.setState({size: 5});
+    this.setState({level: 0});
   }
 
   render() {
@@ -251,11 +297,39 @@ class App extends React.Component {
 
       return (
         <div>
+          <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>
           <Plot
             data={this.state.traces[this.state.level]}
-            layout={{width: this.state.width/4*3, height: (this.state.height)/6*5, title: 'spaND Visualization', showlegend: true, scene:{xaxis: {range:[0,10]}, yaxis: {range:[0,10]}, zaxis: {range:[0,10]}}}}
+            layout={{
+              width: this.state.width/4*3,
+              height: (this.state.height)/6*5,
+              //title: 'spaND Visualization',
+              showlegend: true,
+              scene: {
+                aspectmode:'cube',
+                xaxis: {
+                  autorange: false,
+                  range:[0,10]
+                },
+                yaxis: {
+                  autorange: false,
+                  range:[0,10]
+                },
+                zaxis: {
+                  autorange: false,
+                  range:[0,10]
+                },
+              },
+              margin: {
+                l: 50,
+                r: 50,
+                b: 50,
+                t: 20,
+                pad: 4
+              }
+            }}
           />
-          <div className="slidecontainer" style={{position:"absolute", marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/6*5 + 100 + "px"}}>
+          <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/6*5 + 100 + "px"}}>
             Level: {this.state.level}
             <br/>
             <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
@@ -263,7 +337,7 @@ class App extends React.Component {
             <br/>
             Size: {this.state.size}
             <br/>
-            <input type="range" min="1" max="10" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+            <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
             <br/>
             <br/>
             {
@@ -277,6 +351,10 @@ class App extends React.Component {
                 </div>
               )
             }
+            <button onClick={this.reset.bind(this)}>Reset</button>
+            <br/>
+            <br/>
+            {/*<p>Created by Tanay Sonthalia</p>*/}
           </div>
         </div>
       );

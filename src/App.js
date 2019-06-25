@@ -23,26 +23,27 @@ class App extends React.Component {
 
     let self = this;
 
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", 'data/clustering3d.txt', false);
-    rawFile.onreadystatechange = function ()
+    var folder = "data/002/" //change this line to change the set of data being used
+    var clustering3d = new XMLHttpRequest();
+    clustering3d.open("GET", folder + 'clustering3d.txt', false); //creates get request for the text files of clustering3d.txt
+    clustering3d.onreadystatechange = function ()
     {
-        if(rawFile.readyState === 4)
+        if(clustering3d.readyState === 4)
         {
-            if(rawFile.status === 200 || rawFile.status === 0)
+            if(clustering3d.status === 200 || clustering3d.status === 0)
             {
               var merging3d = new XMLHttpRequest();
-              merging3d.open("GET", 'data/merging3d.txt', false);
+              merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
               merging3d.onreadystatechange = function ()
               {
                   if(merging3d.readyState === 4)
                   {
                       if(merging3d.status === 200 || merging3d.status === 0)
                       {
-                        var allText = merging3d.responseText.substr(13).split('\n');
+                        var merging3dText = merging3d.responseText.split('\n');
 
-                        for (var i = 0; i < allText.length; i++) {
-                          var line = allText[i].split(';');
+                        for (var i = 1; i < merging3dText.length; i++) {
+                          var line = merging3dText[i].split(';');
 
                           self.state.childToParent[line[0]] = line[1];
                         }
@@ -53,25 +54,25 @@ class App extends React.Component {
               alert("Got Merging Data");
               merging3d.send(null);
 
-              var cluster3d = new XMLHttpRequest();
-              cluster3d.open("GET", 'data/clusters3d.txt', false);
-              cluster3d.onreadystatechange = function ()
+              var clusters3d = new XMLHttpRequest();
+              clusters3d.open("GET", folder + 'clusters3d.txt', false);
+              clusters3d.onreadystatechange = function ()
               {
-                  if(cluster3d.readyState === 4)
+                  if(clusters3d.readyState === 4)
                   {
-                      if(cluster3d.status === 200 || cluster3d.status === 0)
+                      if(clusters3d.status === 200 || clusters3d.status === 0)
                       {
                         var id = [];
                         var lvl = [[]]; // Holds ID and corresponding levels
-                        var mergeLvl = [];
-                        var name = [];
+                        var mergeLvl = []; // Holds merge level
+                        var name = []; // Holds name of each cluster
 
-                        var idtoLvl = [[]];
+                        var idtoLvl = [[]]; // Holds conversion from id to level
 
-                        var allText = cluster3d.responseText.substr(21).split('\n');
+                        var clusters3dText = clusters3d.responseText.split('\n');
 
-                        for (var i = 0; i < allText.length-1; i++) {
-                          var curr = allText[i].split(';')
+                        for (var i = 1; i < clusters3dText.length-1; i++) {
+                          var curr = clusters3dText[i].split(';')
                           if (lvl[curr[1]] === undefined) {
                             lvl[curr[1]] = [];
                           }
@@ -93,7 +94,7 @@ class App extends React.Component {
 
                         // eslint-disable-next-line
                         for (var i = 0; i < self.state.leveltoId.length; i++) {
-                         self.state.opacity.push(0.8);
+                         self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
                         }
 
                         self.setState({opacity: self.state.opacity});
@@ -102,11 +103,11 @@ class App extends React.Component {
                         var y = [[[]]];
                         var z = [[[]]];
 
-                        var allText2 = rawFile.responseText;
+                        var clustering3dText = clustering3d.responseText;
 
                         // eslint-disable-next-line
-                        for (var i = 2; i < allText2.split('\n').length-1; i++) {
-                          var arr = allText2.split('\n')[i].split(' ');
+                        for (var i = 2; i < clustering3dText.split('\n').length-1; i++) {
+                          var arr = clustering3dText.split('\n')[i].split(' ');
                           if (arr[3] !== undefined) {
                             // eslint-disable-next-line
                             var id = arr[3].split(';')[1]
@@ -149,8 +150,6 @@ class App extends React.Component {
                               x[1] = x[0];
                               y[1] = y[0];
                               z[1] = z[0];
-
-                              console.log("equal");
                             }
                           }
                         }
@@ -179,7 +178,6 @@ class App extends React.Component {
                               tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                             }
 
-                            console.log(idtoLvl[i] + ", " + j);
                             if (idtoLvl[i] >= j) {
                               var trace = {
                                 x: x[j][i], y: y[j][i], z: z[j][i],
@@ -215,12 +213,12 @@ class App extends React.Component {
                       }
                   }
               }
-              cluster3d.send(null);
+              clusters3d.send(null);
 
             }
         }
     }
-    rawFile.send(null);
+    clustering3d.send(null);
   }
 
   componentDidMount() {
@@ -260,6 +258,25 @@ class App extends React.Component {
 
   changeLevel(event) {
     this.setState({level: event.target.value})
+  }
+
+  toggleLevel(event) { //whether the level is shown or not
+    for (var i = 0; i < this.state.leveltoId[event.target.id].length; i++) {
+      if (this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]] !== undefined) {
+        // eslint-disable-next-line
+        if (this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]].visible === "legendonly") {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]].visible = "true";
+          event.target.innerText = "Hide Level " + event.target.id;
+        } else {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][this.state.leveltoId[event.target.id][i]].visible = "legendonly";
+          event.target.innerText = "Show Level " + event.target.id;
+        }
+      }
+    }
+
+    this.setState({traces: this.state.traces})
   }
 
   reset() {
@@ -351,6 +368,16 @@ class App extends React.Component {
                 </div>
               )
             }
+            {
+              lvltoId.map((lvltoId, index) =>
+                <div key={index}>
+                  <br/>
+                  <button onClick={this.toggleLevel.bind(this)} id={index}>Hide Level {index}</button>
+                </div>
+              )
+            }
+            <br/>
+            <br/>
             <button onClick={this.reset.bind(this)}>Reset</button>
             <br/>
             <br/>

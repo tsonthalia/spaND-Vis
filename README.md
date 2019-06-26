@@ -1,3 +1,9 @@
+# spaND Visualization Tool
+
+## Table of Contents
+
+1. [My first title](#Setup-Instruction)
+
 ## Setup Instructions
 
 In the project directory, run:

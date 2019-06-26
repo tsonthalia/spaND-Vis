@@ -1,5 +1,8 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
+import Accordion from 'react-bootstrap/Accordion';
+import Card from 'react-bootstrap/Card';
+import Button from 'react-bootstrap/Button';
 
 class App extends React.Component {
   constructor(props) {
@@ -21,7 +24,10 @@ class App extends React.Component {
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
+    this.loadPlot = this.loadPlot.bind(this);
+  }
 
+  loadPlot() {
     let self = this;
 
     var folder = "data/002/" //change this line to change the set of data being used
@@ -230,6 +236,7 @@ class App extends React.Component {
 
   componentDidMount() {
     this.updateWindowDimensions();
+    this.loadPlot();
     window.addEventListener('resize', this.updateWindowDimensions);
   }
 
@@ -283,18 +290,32 @@ class App extends React.Component {
           //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = true;
-          event.target.innerText = "Hide Level " + event.target.id;
+          event.target.style.color = "black";
+          //event.target.innerText = "Hide Level " + event.target.id;
         } else {
           //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = false;
-          event.target.innerText = "Show Level " + event.target.id;
+          event.target.style.color = "gray";
+          //event.target.innerText = "Show Level " + event.target.id;
         }
       }
     }
 
     this.setState({traces: this.state.traces})
   }
+
+  // expandList(event) {
+  //   if (this.state.collapsed[event.target.id] === "none") {
+  //     event.target.innerHTML = "&#8897;"
+  //     this.state.collapsed[event.target.id] = "block";
+  //   } else {
+  //     event.target.innerHTML = "&#8827;"
+  //     this.state.collapsed[event.target.id] = "none";
+  //   }
+  //
+  //   this.setState({collapsed: this.state.collapsed});
+  // }
 
   reset() {
     for (var i = 0; i < this.state.traces.length; i++) {
@@ -329,6 +350,8 @@ class App extends React.Component {
       }
 
       var lvltoId = this.state.leveltoId;
+
+
 
       return (
         <div>
@@ -386,19 +409,23 @@ class App extends React.Component {
                 </div>
               )
             }
-            {
-              lvltoId.map((lvltoId, index) =>
-                <div key={index}>
-                  <br/>
-                  <button onClick={this.toggleLevel.bind(this)} id={index}>Hide Level {index}</button>
-                </div>
-              )
-            }
-            <br/>
+            <p>Toggle Level:</p>
+            <ul>
+              {
+                lvltoId.map((curr, index) =>
+                  <div key={index}>
+                    <li onClick={this.toggleLevel.bind(this)} id={index}>Level {index}</li>
+                  </div>
+                )
+              }
+            </ul>
             <br/>
             <button onClick={this.reset.bind(this)}>Reset</button>
             <br/>
             <br/>
+            <div>
+
+            </div>
             {/*<p>Created by Tanay Sonthalia</p>*/}
           </div>
         </div>

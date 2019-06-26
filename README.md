@@ -4,9 +4,21 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 In the project directory, run:
 
-#### ```npm install```
+*Install/Update NPM*
+#### `npm install`
+
+*Install React-Plotly and Plotly*
 #### `npm install react-plotly.js plotly.js`
 #### `npm install plotly.js-dist`
+
+*Install Firebase CLI*
+#### `npm install -g firebase-tools`
+
+*Login to Firebase*
+#### `firebase login`
+
+*Make sure the spand-vis project appears in the list that shows up when the following command has been run*
+#### `firebase list`
 
 ***
 

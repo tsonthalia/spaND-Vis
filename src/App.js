@@ -420,9 +420,6 @@ class App extends React.Component {
             <button onClick={this.reset.bind(this)}>Reset</button>
             <br/>
             <br/>
-            <div>
-
-            </div>
           </div>
         </div>
       );

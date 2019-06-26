@@ -54,8 +54,8 @@ Runs the app in production mode.<br>
 Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 
 ***
-
-## <a name="deploy-firebase"></a>Deploy Program to Firebase
+<a name="deploy-firebase"></a><br>
+## Deploy Program to Firebase
 
 In the project directory, run:
 

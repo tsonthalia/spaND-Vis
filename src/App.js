@@ -406,8 +406,8 @@ class App extends React.Component {
                 </div>
               )
             }
-            <p>Toggle Level:</p>
-            <ul>
+            <p style={{margin: 0}}>Toggle Levels:</p>
+            <ul style={{margin: 0}}>
               {
                 lvltoId.map((curr, index) =>
                   <div key={index}>
@@ -423,7 +423,6 @@ class App extends React.Component {
             <div>
 
             </div>
-            {/*<p>Created by Tanay Sonthalia</p>*/}
           </div>
         </div>
       );

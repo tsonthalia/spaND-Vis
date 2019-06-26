@@ -2,9 +2,9 @@
 
 ## Table of Contents
 
-1. [My first title](#Setup-Instruction)
+1. [Setup Instructions](#setup-instructions)
 
-## Setup Instructions
+## <a name="setup-instructions"></a>Setup Instructions
 
 In the project directory, run:
 

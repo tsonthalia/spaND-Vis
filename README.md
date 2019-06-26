@@ -3,6 +3,10 @@
 ## Table of Contents
 
 1. [Setup Instructions](#setup-instructions)
+2. [Run Program with NPM](#run-npm)
+3. [Run Program with Firebase](#run-firebase)
+4. [Run Program with NPM](#deploy-firebase)
+5. [Other Available Scripts](#other)
 
 ## <a name="setup-instructions"></a>Setup Instructions
 
@@ -16,7 +20,7 @@ In the project directory, run:
 
 ***
 
-## Run Program with NPM
+## <a name="run-npm"></a>Run Program with NPM
 
 In the project directory, run:
 
@@ -30,7 +34,7 @@ You will also see any lint errors in the console.
 
 ***
 
-## Run Program with Firebase
+## <a name="run-firebase"></a>Run Program with Firebase
 
 In the project directory, run:
 
@@ -42,7 +46,7 @@ Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 
 ***
 
-## Deploy Program to Firebase
+## <a name="deploy-firebase"></a>Deploy Program to Firebase
 
 In the project directory, run:
 
@@ -54,7 +58,7 @@ Open [spand-vis.web.app](spand-vis.web.app) to view it in the browser
 
 ***
 
-## Other Available Scripts
+## <a name="other"></a>Other Available Scripts
 
 #### `npm test`
 
@@ -82,7 +86,7 @@ Instead, it will copy all the configuration files and the transitive dependencie
 You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
 
 ***
-
+<!--
 ## Learn More
 
 You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
@@ -113,6 +117,6 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
 
-<br>
+<br>-->
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app").

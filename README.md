@@ -97,8 +97,8 @@ You don’t have to ever use `eject`. The curated feature set is suitable for sm
 ***
 
 ## <a name="contributors"></a>Contributors
-1. [Tanay Sonthalia] (https://github.com/tsonthalia)
-2. [Bazyli Klockiewicz] (https://github.com/buzzlumberjack)
+1. [Tanay Sonthalia](https://github.com/tsonthalia)
+2. [Bazyli Klockiewicz](https://github.com/buzzlumberjack)
 
 ***
 

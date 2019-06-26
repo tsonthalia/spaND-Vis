@@ -5,7 +5,7 @@ In the project directory, run:
 #### `npm install`
 #### `npm install react-plotly.js plotly.js`
 #### `npm install plotly.js-dist`
-<br><br>
+<br>
 #### `npm install -g firebase-tools`
 #### `firebase login`
 

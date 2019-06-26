@@ -1,20 +1,20 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app").
 
-## Build Instructions
+## Setup Instructions
 
 In the project directory, run:
 
-### `npm install`
-### `npm install react-plotly.js plotly.js`
-### `npm install plotly.js-dist`
+#### `npm install`
+#### `npm install react-plotly.js plotly.js`
+#### `npm install plotly.js-dist`
 
 ***
 
-## Run Program
+## Run Program with NPM
 
 In the project directory, run:
 
-### `npm start`
+#### `npm start`
 
 Runs the app in the development mode.<br>
 Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
@@ -24,14 +24,35 @@ You will also see any lint errors in the console.
 
 ***
 
+## Run Program with Firebase
+
+In the project directory, run:
+
+#### `npm build`
+#### `firebase serve`
+
+Run the app in production mode.
+Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
+
+***
+
+## Deploy Program to Firebase
+
+In the project directory, run:
+
+#### `npm build`
+#### `firebase serve`
+
+***
+
 ## Other Available Scripts
 
-### `npm test`
+#### `npm test`
 
 Launches the test runner in the interactive watch mode.<br>
 See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
 
-### `npm run build`
+#### `npm run build`
 
 Builds the app for production to the `build` folder.<br>
 It correctly bundles React in production mode and optimizes the build for the best performance.
@@ -41,7 +62,7 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `npm run eject`
+#### `npm run eject`
 
 **Note: this is a one-way operation. Once you `eject`, you can’t go back!**
 
@@ -79,6 +100,6 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/ad
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
 
-### `npm run build` fails to minify
+#### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify

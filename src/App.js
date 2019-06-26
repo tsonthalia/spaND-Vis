@@ -1,8 +1,5 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import Accordion from 'react-bootstrap/Accordion';
-import Card from 'react-bootstrap/Card';
-import Button from 'react-bootstrap/Button';
 
 class App extends React.Component {
   constructor(props) {

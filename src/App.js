@@ -404,7 +404,7 @@ class App extends React.Component {
         </div>
       );
     } else {
-      return("Loading..."");
+      return(<p>Loading...</p>);
     }
   }
 }

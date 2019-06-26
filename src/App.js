@@ -251,9 +251,10 @@ class App extends React.Component {
   }
 
   changeOpacity(event) {
-    for (var i = 0; i < this.state.leveltoId[event.target.id].length; i++) {
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
-      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] == event.target.id) {
+      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+        // eslint-disable-next-line
         this.state.traces[this.state.level][i].marker.opacity = event.target.value;
       }
     }
@@ -273,22 +274,20 @@ class App extends React.Component {
     // } else {
     //   var temp = 0;
     // }
-    console.log(this.state.traces[this.state.level]);
+    //console.log(this.state.traces[this.state.level]);
 
-    for (var i = 0; i < this.state.leveltoId[event.target.id].length; i++) {
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
-      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] == event.target.id) {
-
-        // eslint-disable-next-line
-        if (this.state.traces[this.state.level][i].visible === "false") {
+      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+        if (this.state.traces[this.state.level][i].visible === false) {
+          //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
-          console.log(this.state.traces[this.state.level][i]);
-          this.state.traces[this.state.level][i].visible = "true";
+          this.state.traces[this.state.level][i].visible = true;
           event.target.innerText = "Hide Level " + event.target.id;
         } else {
+          //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
-          console.log(this.state.traces[this.state.level][i]);
-          this.state.traces[this.state.level][i].visible = "false";
+          this.state.traces[this.state.level][i].visible = false;
           event.target.innerText = "Show Level " + event.target.id;
         }
       }
@@ -298,17 +297,18 @@ class App extends React.Component {
   }
 
   reset() {
-    for (var i = 0; i < this.state.leveltoId.length; i++) {
-      for (var j = 0; j < this.state.leveltoId[i].length; j++) {
-        //console.log(this.state.traces[this.state.level]);
-        if (this.state.traces[i][this.state.leveltoId[i][j]] !== undefined) {
+    for (var i = 0; i < this.state.traces.length; i++) {
+      for (var j = 0; j < this.state.traces[i].length; j++) {
+        //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
+        if (this.state.traces[i][j] !== undefined) {
           // eslint-disable-next-line
-          this.state.traces[i][this.state.leveltoId[i][j]].marker.opacity = 0.8;
+          this.state.traces[i][j].marker.opacity = event.target.value;
           // eslint-disable-next-line
-          this.state.opacity[j] = 0.8;
+          this.state.traces[i][j].visible = true;
         }
       }
     }
+
 
     this.setState({opacity: this.state.opacity});
     this.setState({size: 5});

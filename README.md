@@ -11,7 +11,7 @@ This visualization tool helps understand sparsified nested dissection when it is
 1. [Setup Instructions](#setup-instructions)
 2. [Run Program with NPM](#run-npm)
 3. [Run Program with Firebase](#run-firebase)
-4. [Run Program with NPM](#deploy-firebase)
+4. [Deploy Program to Firebase](#deploy-firebase)
 5. [Other Available Scripts](#other)
 6. [Contributors](#contributors)
 

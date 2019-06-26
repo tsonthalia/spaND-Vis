@@ -1,24 +1,13 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app").
-
 ## Setup Instructions
 
 In the project directory, run:
 
-*Install/Update NPM*
 #### `npm install`
-
-*Install React-Plotly and Plotly*
 #### `npm install react-plotly.js plotly.js`
 #### `npm install plotly.js-dist`
-
-*Install Firebase CLI*
+<br><br>
 #### `npm install -g firebase-tools`
-
-*Login to Firebase*
 #### `firebase login`
-
-*Make sure the spand-vis project appears in the list that shows up when the following command has been run*
-#### `firebase list`
 
 ***
 
@@ -43,7 +32,7 @@ In the project directory, run:
 #### `npm build`
 #### `firebase serve`
 
-Run the app in production mode.
+Runs the app in production mode.<br>
 Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 
 ***
@@ -53,7 +42,10 @@ Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 In the project directory, run:
 
 #### `npm build`
-#### `firebase serve`
+#### `firebase deploy`
+
+Deploys the app in production mode.<br>
+Open [spand-vis.web.app](spand-vis.web.app) to view it in the browser
 
 ***
 
@@ -115,3 +107,7 @@ This section has moved here: https://facebook.github.io/create-react-app/docs/de
 #### `npm run build` fails to minify
 
 This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+
+<br><br>
+
+This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app").

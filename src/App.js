@@ -218,7 +218,6 @@ class App extends React.Component {
 
                         alert("Created Plot Traces");
 
-
                         self.setState({traces: self.state.traces});
                       }
                   }
@@ -348,8 +347,23 @@ class App extends React.Component {
 
       var lvltoId = this.state.leveltoId;
 
+      // var data_mesh = {
+      //   type: "mesh3d",
+      //   x: [0, 1, 2, 0],
+      //   y: [0, 0, 1, 2],
+      //   z: [0, 2, 0, 1],
+      //   i: [0, 0, 0, 1],
+      //   j: [1, 2, 3, 2],
+      //   k: [2, 3, 1, 3],
+      //   intensity: [0, 0.33, 0.66, 1],
+      //   colorscale: [
+      //     [0, 'rgb(255, 0, 0)'],
+      //     [0.5, 'rgb(0, 255, 0)'],
+      //     [1, 'rgb(0, 0, 255)']
+      //   ]
+      // };
 
-
+      //this.state.traces[this.state.level][this.state.traces[this.state.level].length] = data_mesh;
       return (
         <div>
           <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>

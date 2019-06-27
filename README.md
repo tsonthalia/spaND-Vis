@@ -2,7 +2,7 @@
 
 ## Description
 
-This visualization tool helps understand sparsified nested dissection when it is used in 3 dimensions.
+This visualization tool helps understand sparsified nested dissection in 3 dimensions.
 
 ***
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import Plot from 'react-plotly.js';
-import Plotly from 'plotly.js-dist';
+//import Plotly from '../node_modules/plotly.js/lib/core.js';
+import * as d3 from 'd3';
 
 class App extends React.Component {
   constructor(props) {
@@ -46,12 +47,8 @@ class App extends React.Component {
                   {
                       if(clusters3d.status === 200 || clusters3d.status === 0)
                       {
-                        Plotly.d3.csv(folder + 'clustering3d.csv', function(err, rows){
-                          function unpack(rows, key) {
-                          	return rows.map(function(row) {
-                              return row[key];
-                            });
-                          }
+                        d3.csv(folder + 'clustering3d.csv').then(function(data) {
+                          //console.log(data);
 
                           // self.state.loadingMessage = "Getting Merging Data...";
                           // self.setState({loadingMessage: self.state.loadingMessage});
@@ -73,7 +70,7 @@ class App extends React.Component {
                           console.log("Getting Relationship Between ID and Level...");
                           //alert("Got Merging Data");
 
-                          var id = [];
+                          //var id = [];
                           var lvl = [[]]; // Holds ID and corresponding levels
                           var mergeLvl = []; // Holds merge level
                           var name = []; // Holds name of each cluster
@@ -82,6 +79,7 @@ class App extends React.Component {
 
                           var clusters3dText = clusters3d.responseText.split('\n');
 
+                          // eslint-disable-next-line
                           for (var i = 1; i < clusters3dText.length-1; i++) {
                             var curr = clusters3dText[i].split(';')
                             if (lvl[curr[1]] === undefined) {
@@ -121,22 +119,19 @@ class App extends React.Component {
                           var y = [[[]]];
                           var z = [[[]]];
 
-                          var xValues = unpack(rows, 'x');
-                          var yValues = unpack(rows, 'y');
-                          var zValues = unpack(rows, 'z');
-                          var idValues = unpack(rows, 'id');
-
-                          for (var i = 0; i < idValues.length; i++) {
-                            if (x[0][idValues[i]] === undefined) {
-                              x[0][idValues[i]] = [];
-                              y[0][idValues[i]] = [];
-                              z[0][idValues[i]] = [];
+                          // eslint-disable-next-line
+                          for (var i = 0; i < data.length; i++) {
+                            if (x[0][data[i].id] === undefined) {
+                              x[0][data[i].id] = [];
+                              y[0][data[i].id] = [];
+                              z[0][data[i].id] = [];
                             }
 
-                            x[0][idValues[i]].push(xValues[i]);
-                            y[0][idValues[i]].push(yValues[i]);
-                            z[0][idValues[i]].push(zValues[i]);
+                            x[0][data[i].id].push(data[i].x);
+                            y[0][data[i].id].push(data[i].y);
+                            z[0][data[i].id].push(data[i].z);
                           }
+
 
                           // self.state.loadingMessage = "Getting All Plot Views...";
                           // self.setState({loadingMessage: self.state.loadingMessage});
@@ -240,6 +235,204 @@ class App extends React.Component {
                           //console.log(self.state.traces);
                           self.setState({traces: self.state.traces});
                         });
+
+                        // NOTE: The below is the old Plotly.d3.csv method of reading a csv file
+                        // Plotly.d3.csv(folder + 'clustering3d.csv', function(err, rows){
+                        //   function unpack(rows, key) {
+                        //   	return rows.map(function(row) {
+                        //       return row[key];
+                        //     });
+                        //   }
+                        //
+                        //   // self.state.loadingMessage = "Getting Merging Data...";
+                        //   // self.setState({loadingMessage: self.state.loadingMessage});
+                        //
+                        //   console.log("Getting Merging Data...")
+                        //   //self.forceUpdate();
+                        //
+                        //   var merging3dText = merging3d.responseText.split('\n');
+                        //
+                        //   for (var i = 1; i < merging3dText.length; i++) {
+                        //     var line = merging3dText[i].split(';');
+                        //
+                        //     self.state.childToParent[line[0]] = line[1];
+                        //   }
+                        //
+                        //   self.state.loadingMessage = "Getting Relationship Between ID and Level...";
+                        //   self.setState({loadingMessage: self.state.loadingMessage});
+                        //
+                        //   console.log("Getting Relationship Between ID and Level...");
+                        //   //alert("Got Merging Data");
+                        //
+                        //   //var id = [];
+                        //   var lvl = [[]]; // Holds ID and corresponding levels
+                        //   var mergeLvl = []; // Holds merge level
+                        //   var name = []; // Holds name of each cluster
+                        //
+                        //   var idtoLvl = [[]]; // Holds conversion from id to level
+                        //
+                        //   var clusters3dText = clusters3d.responseText.split('\n');
+                        //
+                        //   // eslint-disable-next-line
+                        //   for (var i = 1; i < clusters3dText.length-1; i++) {
+                        //     var curr = clusters3dText[i].split(';')
+                        //     if (lvl[curr[1]] === undefined) {
+                        //       lvl[curr[1]] = [];
+                        //     }
+                        //     if (idtoLvl[curr[0]] === undefined) {
+                        //       idtoLvl[curr[0]] = [];
+                        //     }
+                        //
+                        //     lvl[curr[1]].push(curr[0]);
+                        //     mergeLvl.push(curr[2]);
+                        //     name.push(curr[3]);
+                        //
+                        //     idtoLvl[curr[0]].push(curr[1]);
+                        //   }
+                        //
+                        //   // self.state.loadingMessage = "Getting Initial Plot View...";
+                        //   // self.setState({loadingMessage: self.state.loadingMessage});
+                        //
+                        //   console.log("Getting Initial Plot View...");
+                        //   //alert("Got ID to Level");
+                        //
+                        //   self.state.leveltoId = lvl;
+                        //   //self.setState({leveltoId: self.state.leveltoId});
+                        //
+                        //   self.state.idtoLevel = idtoLvl;
+                        //   //self.setState({idtoLevel: self.state.idtoLevel});
+                        //
+                        //   // eslint-disable-next-line
+                        //   for (var i = 0; i < self.state.leveltoId.length; i++) {
+                        //    self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
+                        //   }
+                        //
+                        //   //self.setState({opacity: self.state.opacity});
+                        //
+                        //   var x = [[[]]];
+                        //   var y = [[[]]];
+                        //   var z = [[[]]];
+                        //
+                        //   var xValues = unpack(rows, 'x');
+                        //   var yValues = unpack(rows, 'y');
+                        //   var zValues = unpack(rows, 'z');
+                        //   var idValues = unpack(rows, 'id');
+                        //
+                        //   // eslint-disable-next-line
+                        //   for (var i = 0; i < idValues.length; i++) {
+                        //     if (x[0][idValues[i]] === undefined) {
+                        //       x[0][idValues[i]] = [];
+                        //       y[0][idValues[i]] = [];
+                        //       z[0][idValues[i]] = [];
+                        //     }
+                        //
+                        //     x[0][idValues[i]].push(xValues[i]);
+                        //     y[0][idValues[i]].push(yValues[i]);
+                        //     z[0][idValues[i]].push(zValues[i]);
+                        //   }
+                        //
+                        //   // self.state.loadingMessage = "Getting All Plot Views...";
+                        //   // self.setState({loadingMessage: self.state.loadingMessage});
+                        //
+                        //   console.log("Getting All Plot Views...");
+                        //   //alert("Got Initial Plot View");
+                        //
+                        //   //eslint-disable-next-line
+                        //   for (var i = 1; i < lvl.length; i++) {
+                        //     for (var j = x[i-1].length-1; j >= 0; j--) {
+                        //
+                        //       if (x[i] === undefined) {
+                        //         x[i] = [[]];
+                        //         y[i] = [[]];
+                        //         z[i] = [[]];
+                        //       }
+                        //
+                        //       if (i !== 1) {
+                        //         if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
+                        //           if (x[i][self.state.childToParent[j]] === undefined) {
+                        //             x[i][self.state.childToParent[j]] = [];
+                        //             y[i][self.state.childToParent[j]] = [];
+                        //             z[i][self.state.childToParent[j]] = [];
+                        //           }
+                        //           x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
+                        //           y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
+                        //           z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+                        //         }
+                        //       } else {
+                        //         x[1] = x[0];
+                        //         y[1] = y[0];
+                        //         z[1] = z[0];
+                        //       }
+                        //     }
+                        //   }
+                        //
+                        //   //console.log(x[2]);
+                        //   // self.state.loadingMessage = "Creating Plot Traces...";
+                        //   // self.setState({loadingMessage: self.state.loadingMessage});
+                        //
+                        //   console.log("Creating Plot Traces...");
+                        //   //alert("Generated All Plot Views");
+                        //
+                        //   self.state.x = x;
+                        //   self.state.y = y;
+                        //   self.state.z = z;
+                        //
+                        //   // eslint-disable-next-line
+                        //   for (var j = 0; j < x.length; j++) {
+                        //     // eslint-disable-next-line
+                        //     for (var i = 0; i < x[j].length; i++) {
+                        //       var tempName = "";
+                        //       var tempShape = "";
+                        //       var tempColor = "";
+                        //
+                        //
+                        //       if (name[i].includes("not_fault")) {
+                        //         tempName = "Cluster"
+                        //         tempShape = "circle"
+                        //         tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
+                        //       } else {
+                        //         tempName = "Fault"
+                        //         tempShape = "square"
+                        //         tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
+                        //       }
+                        //
+                        //       if (idtoLvl[i] >= j && x[j][i] !== undefined) {
+                        //         var trace = {
+                        //           x: x[j][i], y: y[j][i], z: z[j][i],
+                        //           mode: 'markers',
+                        //           //legendgroup: 'Level ' + idtoLvl[i],
+                        //           marker: {
+                        //             size: self.state.size,
+                        //             symbol: tempShape,
+                        //             color: tempColor,
+                        //             line: {
+                        //               color: 'rgb(217, 217, 217)',
+                        //               width: 0.5
+                        //             },
+                        //             opacity: self.state.opacity
+                        //           },
+                        //           type: 'scatter3d',
+                        //           id: idtoLvl[i],
+                        //           name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
+                        //         };
+                        //
+                        //         if (self.state.traces[j] === undefined) {
+                        //           self.state.traces[j] = [];
+                        //         }
+                        //
+                        //         //self.state.traces[j][i] = trace;
+                        //         self.state.traces[j].push(trace);
+                        //       }
+                        //     }
+                        //   }
+                        //
+                        //   //self.state.loadingMessage = "Generating Plot...";
+                        //   console.log("Generating Plot...");
+                        //   //alert("Created Plot Traces");
+                        //
+                        //   //console.log(self.state.traces);
+                        //   self.setState({traces: self.state.traces});
+                        // });
                       }
                   }
               }
@@ -441,7 +634,7 @@ class App extends React.Component {
       //   console.log(this.state.loadingMessage);
       // }
       return(
-        <div>
+        <div style={{textAlign: "center"}}>
           <h2>Loading...</h2>
           <p>(Check Developer Console for More Information)</p>
         </div>

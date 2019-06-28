@@ -47,7 +47,7 @@ You will also see any lint errors in the console.
 
 In the project directory, run:
 
-#### `npm build`
+#### `npm run build`
 #### `firebase serve`
 
 Runs the app in production mode.<br>
@@ -59,7 +59,7 @@ Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
 
 In the project directory, run:
 
-#### `npm build`
+#### `npm run build`
 #### `firebase deploy`
 
 Deploys the app in production mode.<br>

@@ -21,6 +21,7 @@ class App extends React.Component {
       y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
       z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
       //loadingMessage: "",
+      hidden: [],
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -111,6 +112,7 @@ class App extends React.Component {
                           // eslint-disable-next-line
                           for (var i = 0; i < self.state.leveltoId.length; i++) {
                            self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
+                           self.state.hidden.push("black");
                           }
 
                           //self.setState({opacity: self.state.opacity});
@@ -481,8 +483,15 @@ class App extends React.Component {
     this.setState({opacity: this.state.opacity});
   }
 
-  changeLevel(event) {
-    this.setState({level: event.target.value})
+  changeLevel(event) { // moving the level slider
+    this.setState({level: event.target.value});
+
+    for (var i = 0; i < this.state.hidden.length; i++) {
+      // eslint-disable-next-line
+      this.state.hidden[i] = "black";
+    }
+
+    this.setState({hidden: this.state.hidden});
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -493,13 +502,15 @@ class App extends React.Component {
           //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = true;
-          event.target.style.color = "black";
+          // eslint-disable-next-line
+          this.state.hidden[event.target.id] = "black";
           //event.target.innerText = "Hide Level " + event.target.id;
         } else {
           //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = false;
-          event.target.style.color = "gray";
+          // eslint-disable-next-line
+          this.state.hidden[event.target.id] = "gray";
           //event.target.innerText = "Show Level " + event.target.id;
         }
       }
@@ -531,6 +542,9 @@ class App extends React.Component {
           this.state.traces[i][j].visible = true;
         }
       }
+
+      // eslint-disable-next-line
+      this.state.hidden[i] = "black";
     }
 
 
@@ -563,7 +577,7 @@ class App extends React.Component {
             data={this.state.traces[this.state.level]}
             layout={{
               width: this.state.width/4*3,
-              height: (this.state.height)/6*5,
+              height: (this.state.height)/10*9,
               //title: 'spaND Visualization',
               showlegend: true,
               scene: {
@@ -590,7 +604,7 @@ class App extends React.Component {
               }
             }}
           />
-          <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/6*5 + 100 + "px"}}>
+          <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
             Level: {this.state.level}
             <br/>
             <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
@@ -617,7 +631,7 @@ class App extends React.Component {
               {
                 lvltoId.map((curr, index) =>
                   <div key={index}>
-                    <li onClick={this.toggleLevel.bind(this)} id={index}>Level {index}</li>
+                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.hidden[index]}}>Level {index}</li>
                   </div>
                 )
               }

@@ -493,16 +493,19 @@ class App extends React.Component {
   changeLevel(event) { // moving the level slider
     // eslint-disable-next-line
     this.state.hiddenPlots[this.state.level] = "none";
-    this.setState({level: event.target.value});
     // eslint-disable-next-line
     this.state.hiddenPlots[event.target.value] = "block";
 
     for (var i = 0; i < this.state.levelTextColor.length; i++) {
-      // eslint-disable-next-line
-      this.state.levelTextColor[i] = "black";
+      if (i<event.target.value) {
+        this.state.levelTextColor[i] = "gray";
+      } else {
+        // eslint-disable-next-line
+        this.state.levelTextColor[i] = "black";
+      }
     }
 
-    this.setState({levelTextColor: this.state.levelTextColor});
+    this.setState({level: event.target.value});
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -629,7 +632,19 @@ class App extends React.Component {
             <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
             <br/>
             <br/>
-            Size: {this.state.size}
+            <p style={{margin: 0}}>Show Levels:</p>
+            <ul style={{margin: 0}}>
+              {
+                lvltoId.map((curr, index) =>
+                  <div key={index}>
+                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
+                  </div>
+                )
+              }
+            </ul>
+            <br/>
+            <br/>
+            Marker Size: {this.state.size}
             <br/>
             <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
             <br/>
@@ -645,17 +660,6 @@ class App extends React.Component {
                 </div>
               )
             }
-            <p style={{margin: 0}}>Toggle Levels:</p>
-            <ul style={{margin: 0}}>
-              {
-                lvltoId.map((curr, index) =>
-                  <div key={index}>
-                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
-                  </div>
-                )
-              }
-            </ul>
-            <br/>
             <button onClick={this.reset.bind(this)}>Reset</button>
             <br/>
             <br/>

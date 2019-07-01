@@ -19,11 +19,15 @@ This visualization tool helps understand sparsified nested dissection when it is
 
 ## <a name="setup-instructions"></a>Setup Instructions
 
+Dependencies:
+- React-Plotly
+- Plotly
+- D3
+
 In the project directory, run:
 
 #### `npm install`
-#### `npm install react-plotly.js plotly.js`
-#### `npm install plotly.js-dist`
+#### `npm install react-plotly.js plotly.js d3`
 #### `npm install -g firebase-tools`
 #### `firebase login`
 

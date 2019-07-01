@@ -20,9 +20,9 @@ This visualization tool helps understand sparsified nested dissection when it is
 ## <a name="setup-instructions"></a>Setup Instructions
 
 Dependencies:
-- React-Plotly
-- Plotly
-- D3
+* React-Plotly
+* Plotly
+* D3
 
 In the project directory, run:
 

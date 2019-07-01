@@ -596,16 +596,19 @@ class App extends React.Component {
   changeLevel(event) { // moving the level slider
     // eslint-disable-next-line
     this.state.hiddenPlots[this.state.level] = "none";
-    this.setState({level: event.target.value});
     // eslint-disable-next-line
     this.state.hiddenPlots[event.target.value] = "block";
 
     for (var i = 0; i < this.state.levelTextColor.length; i++) {
-      // eslint-disable-next-line
-      this.state.levelTextColor[i] = "black";
+      if (i<event.target.value) {
+        this.state.levelTextColor[i] = "gray";
+      } else {
+        // eslint-disable-next-line
+        this.state.levelTextColor[i] = "black";
+      }
     }
 
-    this.setState({levelTextColor: this.state.levelTextColor});
+    this.setState({level: event.target.value});
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -789,7 +792,6 @@ class App extends React.Component {
                 </div>
               )
             }
-
             <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
               Level: {this.state.level}
               <br/>
@@ -865,6 +867,7 @@ class App extends React.Component {
             <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
               <input type="number" value={this.state.surfaceMarkerSize} onChange={this.changeSurfaceMarkerSize.bind(this)}/>
             </div>
+            <button onClick={this.reset.bind(this)}>Reset</button>
           </div>
         </div>
       );

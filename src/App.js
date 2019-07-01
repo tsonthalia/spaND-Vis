@@ -21,7 +21,8 @@ class App extends React.Component {
       y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
       z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
       //loadingMessage: "",
-      hidden: [],
+      levelTextColor: [],
+      hiddenPlots: [],
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -112,7 +113,13 @@ class App extends React.Component {
                           // eslint-disable-next-line
                           for (var i = 0; i < self.state.leveltoId.length; i++) {
                            self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
-                           self.state.hidden.push("black");
+                           self.state.levelTextColor.push("black");
+
+                           if (i===0) {
+                             self.state.hiddenPlots.push("block");
+                           } else {
+                             self.state.hiddenPlots.push("none");
+                           }
                           }
 
                           //self.setState({opacity: self.state.opacity});
@@ -484,14 +491,16 @@ class App extends React.Component {
   }
 
   changeLevel(event) { // moving the level slider
+    this.state.hiddenPlots[this.state.level] = "none";
     this.setState({level: event.target.value});
+    this.state.hiddenPlots[event.target.value] = "block";
 
-    for (var i = 0; i < this.state.hidden.length; i++) {
+    for (var i = 0; i < this.state.levelTextColor.length; i++) {
       // eslint-disable-next-line
-      this.state.hidden[i] = "black";
+      this.state.levelTextColor[i] = "black";
     }
 
-    this.setState({hidden: this.state.hidden});
+    this.setState({levelTextColor: this.state.levelTextColor});
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -503,14 +512,14 @@ class App extends React.Component {
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = true;
           // eslint-disable-next-line
-          this.state.hidden[event.target.id] = "black";
+          this.state.levelTextColor[event.target.id] = "black";
           //event.target.innerText = "Hide Level " + event.target.id;
         } else {
           //console.log(this.state.traces[this.state.level][i]);
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = false;
           // eslint-disable-next-line
-          this.state.hidden[event.target.id] = "gray";
+          this.state.levelTextColor[event.target.id] = "gray";
           //event.target.innerText = "Show Level " + event.target.id;
         }
       }
@@ -544,7 +553,7 @@ class App extends React.Component {
       }
 
       // eslint-disable-next-line
-      this.state.hidden[i] = "black";
+      this.state.levelTextColor[i] = "black";
     }
 
 
@@ -566,6 +575,7 @@ class App extends React.Component {
         }
       }
 
+      var traces = this.state.traces;
       var lvltoId = this.state.leveltoId;
 
       //console.log(this.state.traces[this.state.level].length);
@@ -573,37 +583,44 @@ class App extends React.Component {
       return (
         <div>
           <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>
-          <Plot
-            data={this.state.traces[this.state.level]}
-            layout={{
-              width: this.state.width/4*3,
-              height: (this.state.height)/10*9,
-              //title: 'spaND Visualization',
-              showlegend: true,
-              scene: {
-                aspectmode:'cube',
-                xaxis: {
-                  autorange: false,
-                  range:[0,10]
-                },
-                yaxis: {
-                  autorange: false,
-                  range:[0,10]
-                },
-                zaxis: {
-                  autorange: false,
-                  range:[0,10]
-                },
-              },
-              margin: {
-                l: 50,
-                r: 50,
-                b: 50,
-                t: 20,
-                pad: 4
-              }
-            }}
-          />
+          {
+            traces.map((currLevelTrace, index) =>
+              <div key={index} style={{display: this.state.hiddenPlots[index]}}>
+                <Plot
+                  data={this.state.traces[index]}
+                  layout={{
+                    width: this.state.width/4*3,
+                    height: (this.state.height)/10*9,
+                    //title: 'spaND Visualization',
+                    showlegend: true,
+                    scene: {
+                      aspectmode:'cube',
+                      xaxis: {
+                        autorange: false,
+                        range:[0,10]
+                      },
+                      yaxis: {
+                        autorange: false,
+                        range:[0,10]
+                      },
+                      zaxis: {
+                        autorange: false,
+                        range:[0,10]
+                      },
+                    },
+                    margin: {
+                      l: 50,
+                      r: 50,
+                      b: 50,
+                      t: 20,
+                      pad: 4
+                    }
+                  }}
+                />
+              </div>
+            )
+          }
+
           <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
             Level: {this.state.level}
             <br/>
@@ -631,7 +648,7 @@ class App extends React.Component {
               {
                 lvltoId.map((curr, index) =>
                   <div key={index}>
-                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.hidden[index]}}>Level {index}</li>
+                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
                   </div>
                 )
               }

@@ -491,8 +491,10 @@ class App extends React.Component {
   }
 
   changeLevel(event) { // moving the level slider
+    // eslint-disable-next-line
     this.state.hiddenPlots[this.state.level] = "none";
     this.setState({level: event.target.value});
+    // eslint-disable-next-line
     this.state.hiddenPlots[event.target.value] = "block";
 
     for (var i = 0; i < this.state.levelTextColor.length; i++) {
@@ -667,7 +669,8 @@ class App extends React.Component {
       return(
         <div style={{textAlign: "center"}}>
           <h2>Loading...</h2>
-          <p>(Check Developer Console for More Information)</p>
+          <p>Depending on the size of your data, this may take a while.</p>
+          <p>Check the <strong>Developer Console</strong> for more information.</p>
         </div>
       );
     }

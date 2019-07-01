@@ -23,6 +23,9 @@ class App extends React.Component {
       //loadingMessage: "",
       levelTextColor: [],
       hiddenPlots: [],
+      testCluster: [[]],
+      surfaceData: [],
+      surfaceMarkerSize: 30,
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -177,6 +180,13 @@ class App extends React.Component {
                             }
                           }
 
+                          // for (var i = 0; i < z[0].length; i++) {
+                          //   console.log(x[0][0][i]);
+                          //   console.log(y[0][0][i]);
+                          //   console.log(self.state.testCluster[x[0][0][i]][y[0][0][i]]);
+                          //   self.state.testCluster[x[0][0][i]][y[0][0][i]] = z[0][0][i]
+                          // }
+
                           //console.log(x[2]);
                           // self.state.loadingMessage = "Creating Plot Traces...";
                           // self.setState({loadingMessage: self.state.loadingMessage});
@@ -236,6 +246,99 @@ class App extends React.Component {
                               }
                             }
                           }
+
+                          var cluster = 188;
+
+                          // console.log(self.state.x[0][cluster]);
+                          // console.log(self.state.y[0][cluster]);
+                          // console.log(self.state.z[0][cluster]);
+
+                          // var tempZ = [self.state.z[0][cluster]];
+                          // for (var i = 1; i < self.state.z[0][cluster].length; i++) {
+                          //   tempZ.push(self.state.z[0][cluster]);
+                          // }
+                          //
+                          // var data_z1 = {
+                          //   x: self.state.x[0][cluster],
+                          //   y: self.state.y[0][cluster],
+                          //   z: tempZ,
+                          //   type: surface3d,
+                          //   showscale: false,
+                          //   colorscale: [
+                          //     ['0.0', 'red'],
+                          //     ['1.0', 'red']
+                          //   ],
+                          // }
+
+                          // var data_z1 = {
+                          //   x: [10, 5.83333, 5.83333, 10, 10, 5.83333, 5.83333, 10],
+                          //   y: [0, 1.66667, 0, 1.66667, 0, 1.66667, 0, 1.66667],
+                          //   z: [3.33333, 3.33333, 3.33333, 3.33333, 4.166667, 4.166667, 4.166667, 4.166667],
+                          //
+                          //   i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+                          //   j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+                          //   k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+                          //
+                          //   // x: [0, 0, 1, 1, 0, 0, 1, 1],
+                          //   // y: [0, 1, 1, 0, 0, 1, 1, 0],
+                          //   // z: [0, 0, 0, 0, 1, 1, 1, 1],
+                          //   // i: [7, 0, 0, 0, 4, 4, 6, 6, 4, 0, 3, 2],
+                          //   // j: [3, 4, 1, 2, 5, 6, 5, 2, 0, 1, 6, 3],
+                          //   // k: [0, 7, 2, 3, 6, 7, 1, 1, 5, 5, 7, 6],
+                          //
+                          //   type: 'mesh3d',
+                          //   showscale: false,
+                          //   colorscale: [
+                          //     ['0.0', 'red'],
+                          //     ['1.0', 'red']
+                          //   ],
+                          // };
+
+                          var normalPoint = {
+                            x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
+                            mode: 'markers',
+                            //legendgroup: 'Level ' + idtoLvl[i],
+                            marker: {
+                              size: 5,
+                              symbol: 'circle',
+                              color: 'red',
+                              line: {
+                                color: 'rgb(217, 217, 217)',
+                                width: 0.5
+                              },
+                              opacity: self.state.opacity
+                            },
+                            type: 'scatter3d',
+                            id: idtoLvl[cluster],
+                            name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
+                            surfacecolor: 'red',
+                            connectgaps: true,
+                          };
+
+                          var highlightPoint = {
+                            x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
+                            mode: 'markers',
+                            //legendgroup: 'Level ' + idtoLvl[i],
+                            marker: {
+                              size: self.state.surfaceMarkerSize,
+                              symbol: 'circle',
+                              color: 'blue',
+                              line: {
+                                color: 'rgb(217, 217, 217)',
+                                width: 0.5
+                              },
+                              opacity: 0.3
+                            },
+                            type: 'scatter3d',
+                            id: idtoLvl[cluster],
+                            name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
+                            surfacecolor: 'red',
+                            showlegend: false,
+                            connectgaps: true,
+                          };
+
+                          self.state.surfaceData.push(normalPoint);
+                          self.state.surfaceData.push(highlightPoint);
 
                           //self.state.loadingMessage = "Generating Plot...";
                           console.log("Generating Plot...");
@@ -542,6 +645,12 @@ class App extends React.Component {
   //   this.setState({collapsed: this.state.collapsed});
   // }
 
+
+  changeSurfaceMarkerSize(event) {
+    this.state.surfaceData[1].marker.size = event.target.value;
+    this.setState({surfaceMarkerSize: event.target.value});
+  }
+
   reset() {
     for (var i = 0; i < this.state.traces.length; i++) {
       for (var j = 0; j < this.state.traces[i].length; j++) {
@@ -580,85 +689,182 @@ class App extends React.Component {
       var traces = this.state.traces;
       var lvltoId = this.state.leveltoId;
 
+      // var z1 = [
+      //   [8.83,8.89,8.81,8.87,8.9,8.87],
+      //   [8.89,8.94,8.85,8.94,8.96,8.92],
+      //   [8.84,8.9,8.82,8.92,8.93,8.91],
+      //   [8.79,8.85,8.79,8.9,8.94,8.92],
+      //   [8.79,8.88,8.81,8.9,8.95,8.92],
+      //   [8.8,8.82,8.78,8.91,8.94,8.92],
+      //   [8.75,8.78,8.77,8.91,8.95,8.92],
+      //   [8.8,8.8,8.77,8.91,8.95,8.94],
+      //   [8.74,8.81,8.76,8.93,8.98,8.99],
+      //   [8.89,8.99,8.92,9.1,9.13,9.11],
+      //   [8.97,8.97,8.91,9.09,9.11,9.11],
+      //   [9.04,9.08,9.05,9.25,9.28,9.27],
+      //   [9,9.01,9,9.2,9.23,9.2],
+      //   [8.99,8.99,8.98,9.18,9.2,9.19],
+      //   [8.93,8.97,8.97,9.18,9.2,9.18]
+      // ];
+
+      // var tempZ = [this.state.z[0][188]];
+      // for (var i = 1; i < this.state.z[0][188].length; i++) {
+      //   tempZ.push(this.state.z[0][188]);
+      // }
+      //
+      // console.log(this.state.x[0][188]);
+      // console.log(this.state.y[0][188]);
+      // console.log(tempZ);
+
+      // var tempZ2 = [
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      //   ["8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "8.33333", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "9.16667", "10", "10", "10", "10", "10", "10"],
+      // ];
+
+      // var data_z1 = {
+      //   x: this.state.x[0][188],
+      //   y: this.state.y[0][188],
+      //   z: tempZ,
+      //   type: 'surface',
+      //   showscale: false,
+      //   color: 'red',
+      // };
+
       //console.log(this.state.traces[this.state.level].length);
 
       return (
         <div>
           <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>
-          {
-            traces.map((currLevelTrace, index) =>
-              <div key={index} style={{display: this.state.hiddenPlots[index]}}>
-                <Plot
-                  data={this.state.traces[index]}
-                  layout={{
-                    width: this.state.width/4*3,
-                    height: (this.state.height)/10*9,
-                    //title: 'spaND Visualization',
-                    showlegend: true,
-                    scene: {
-                      aspectmode:'cube',
-                      xaxis: {
-                        autorange: false,
-                        range:[0,10]
-                      },
-                      yaxis: {
-                        autorange: false,
-                        range:[0,10]
-                      },
-                      zaxis: {
-                        autorange: false,
-                        range:[0,10]
-                      },
-                    },
-                    margin: {
-                      l: 50,
-                      r: 50,
-                      b: 50,
-                      t: 20,
-                      pad: 4
-                    }
-                  }}
-                />
-              </div>
-            )
-          }
-
-          <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
-            Level: {this.state.level}
-            <br/>
-            <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
-            <br/>
-            <br/>
-            Size: {this.state.size}
-            <br/>
-            <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
-            <br/>
-            <br/>
+          <div style={{height: (this.state.height)/10*9}}>
             {
-              lvltoId.map((lvltoId, index) =>
-                <div key={index}>
-                  Opacity of Level {index}: {this.state.opacity[index]}
-                  <br/>
-                  <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[index]} className="slider" id={index} onChange={this.changeOpacity.bind(this)}/>
-                  <br/>
-                  <br/>
+              traces.map((currLevelTrace, index) =>
+                <div key={index} style={{display: this.state.hiddenPlots[index]}}>
+                  <Plot
+                    data={this.state.traces[index]}
+                    layout={{
+                      width: this.state.width/4*3,
+                      height: (this.state.height)/10*9,
+                      //title: 'spaND Visualization',
+                      showlegend: true,
+                      scene: {
+                        aspectmode:'cube',
+                        xaxis: {
+                          autorange: false,
+                          range:[0,10]
+                        },
+                        yaxis: {
+                          autorange: false,
+                          range:[0,10]
+                        },
+                        zaxis: {
+                          autorange: false,
+                          range:[0,10]
+                        },
+                      },
+                      margin: {
+                        l: 50,
+                        r: 50,
+                        b: 50,
+                        t: 20,
+                        pad: 4
+                      }
+                    }}
+                  />
                 </div>
               )
             }
-            <p style={{margin: 0}}>Toggle Levels:</p>
-            <ul style={{margin: 0}}>
+
+            <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
+              Level: {this.state.level}
+              <br/>
+              <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
+              <br/>
+              <br/>
+              <p style={{margin: 0}}>Show Levels:</p>
+              <ul style={{margin: 0}}>
+                {
+                  lvltoId.map((curr, index) =>
+                    <div key={index}>
+                      <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
+                    </div>
+                  )
+                }
+              </ul>
+              <br/>
+              <br/>
+              Size: {this.state.size}
+              <br/>
+              <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+              <br/>
+              <br/>
               {
-                lvltoId.map((curr, index) =>
+                lvltoId.map((lvltoId, index) =>
                   <div key={index}>
-                    <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
+                    Opacity of Level {index}: {this.state.opacity[index]}
+                    <br/>
+                    <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[index]} className="slider" id={index} onChange={this.changeOpacity.bind(this)}/>
+                    <br/>
+                    <br/>
                   </div>
                 )
               }
-            </ul>
-            <br/>
-            <button onClick={this.reset.bind(this)}>Reset</button>
-            <br/>
-            <br/>
+              <br/>
+              <button onClick={this.reset.bind(this)}>Reset</button>
+              <br/>
+              <br/>
+            </div>
+          </div>
+          <div>
+            <Plot
+              data={this.state.surfaceData}
+              layout={{
+                width: this.state.width/4*3,
+                height: (this.state.height)/10*9,
+                //title: 'spaND Visualization',
+                showlegend: true,
+                scene: {
+                  aspectmode:'cube',
+                  xaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                  yaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                  zaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                },
+                margin: {
+                  l: 50,
+                  r: 50,
+                  b: 50,
+                  t: 20,
+                  pad: 4
+                }
+              }}
+            />
+            <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
+              <input type="number" value={this.state.surfaceMarkerSize} onChange={this.changeSurfaceMarkerSize.bind(this)}/>
+            </div>
           </div>
         </div>
       );

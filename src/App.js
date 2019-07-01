@@ -23,9 +23,8 @@ class App extends React.Component {
       //loadingMessage: "",
       levelTextColor: [],
       hiddenPlots: [],
-      testCluster: [[]],
-      surfaceData: [],
-      surfaceMarkerSize: 30,
+      currCluster: 0,
+      advanced: "none",
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -203,17 +202,13 @@ class App extends React.Component {
                             // eslint-disable-next-line
                             for (var i = 0; i < x[j].length; i++) {
                               var tempName = "";
-                              var tempShape = "";
                               var tempColor = "";
-
 
                               if (name[i].includes("not_fault")) {
                                 tempName = "Cluster"
-                                tempShape = "circle"
                                 tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
                               } else {
                                 tempName = "Fault"
-                                tempShape = "square"
                                 tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                               }
 
@@ -224,7 +219,7 @@ class App extends React.Component {
                                   //legendgroup: 'Level ' + idtoLvl[i],
                                   marker: {
                                     size: self.state.size,
-                                    symbol: tempShape,
+                                    symbol: 'circle',
                                     color: tempColor,
                                     line: {
                                       color: 'rgb(217, 217, 217)',
@@ -247,7 +242,7 @@ class App extends React.Component {
                             }
                           }
 
-                          var cluster = 188;
+                          //var cluster = 188;
 
                           // console.log(self.state.x[0][cluster]);
                           // console.log(self.state.y[0][cluster]);
@@ -294,51 +289,51 @@ class App extends React.Component {
                           //   ],
                           // };
 
-                          var normalPoint = {
-                            x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
-                            mode: 'markers',
-                            //legendgroup: 'Level ' + idtoLvl[i],
-                            marker: {
-                              size: 5,
-                              symbol: 'circle',
-                              color: 'red',
-                              line: {
-                                color: 'rgb(217, 217, 217)',
-                                width: 0.5
-                              },
-                              opacity: self.state.opacity
-                            },
-                            type: 'scatter3d',
-                            id: idtoLvl[cluster],
-                            name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
-                            surfacecolor: 'red',
-                            connectgaps: true,
-                          };
-
-                          var highlightPoint = {
-                            x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
-                            mode: 'markers',
-                            //legendgroup: 'Level ' + idtoLvl[i],
-                            marker: {
-                              size: self.state.surfaceMarkerSize,
-                              symbol: 'circle',
-                              color: 'blue',
-                              line: {
-                                color: 'rgb(217, 217, 217)',
-                                width: 0.5
-                              },
-                              opacity: 0.3
-                            },
-                            type: 'scatter3d',
-                            id: idtoLvl[cluster],
-                            name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
-                            surfacecolor: 'red',
-                            showlegend: false,
-                            connectgaps: true,
-                          };
-
-                          self.state.surfaceData.push(normalPoint);
-                          self.state.surfaceData.push(highlightPoint);
+                          // var normalPoint = {
+                          //   x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
+                          //   mode: 'markers',
+                          //   //legendgroup: 'Level ' + idtoLvl[i],
+                          //   marker: {
+                          //     size: 5,
+                          //     symbol: 'circle',
+                          //     color: 'red',
+                          //     line: {
+                          //       color: 'rgb(217, 217, 217)',
+                          //       width: 0.5
+                          //     },
+                          //     opacity: self.state.opacity
+                          //   },
+                          //   type: 'scatter3d',
+                          //   id: idtoLvl[cluster],
+                          //   name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
+                          //   surfacecolor: 'red',
+                          //   connectgaps: true,
+                          // };
+                          //
+                          // var highlightPoint = {
+                          //   x: x[0][cluster], y: y[0][cluster], z: z[0][cluster],
+                          //   mode: 'markers',
+                          //   //legendgroup: 'Level ' + idtoLvl[i],
+                          //   marker: {
+                          //     size: self.state.surfaceMarkerSize,
+                          //     symbol: 'circle',
+                          //     color: 'blue',
+                          //     line: {
+                          //       color: 'rgb(217, 217, 217)',
+                          //       width: 0.5
+                          //     },
+                          //     opacity: 0.3
+                          //   },
+                          //   type: 'scatter3d',
+                          //   id: idtoLvl[cluster],
+                          //   name: tempName + ' ' + i + ' (Level ' + idtoLvl[cluster] + ')',
+                          //   surfacecolor: 'red',
+                          //   showlegend: false,
+                          //   connectgaps: true,
+                          // };
+                          //
+                          // self.state.surfaceData.push(normalPoint);
+                          // self.state.surfaceData.push(highlightPoint);
 
                           //self.state.loadingMessage = "Generating Plot...";
                           console.log("Generating Plot...");
@@ -601,6 +596,7 @@ class App extends React.Component {
 
     for (var i = 0; i < this.state.levelTextColor.length; i++) {
       if (i<event.target.value) {
+        // eslint-disable-next-line
         this.state.levelTextColor[i] = "gray";
       } else {
         // eslint-disable-next-line
@@ -649,9 +645,67 @@ class App extends React.Component {
   // }
 
 
-  changeSurfaceMarkerSize(event) {
-    this.state.surfaceData[1].marker.size = event.target.value;
-    this.setState({surfaceMarkerSize: event.target.value});
+  updateCurrCluster(event) {
+    if (event.target.value < this.state.traces[this.state.level].length) {
+
+    }
+    this.setState({currCluster: event.target.value});
+  }
+
+  toggleAdvancedTab(event) {
+    if (this.state.advanced === "none") {
+      this.setState({advanced: "block"});
+    } else {
+      this.setState({advanced: "none"});
+    }
+  }
+
+  showSurface(event) {
+    var alreadyPresent = false;
+    var index = null;
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if (this.state.traces[this.state.level][i].name.includes(this.state.currCluster)) {
+        index = i;
+      }
+    }
+
+    if (index != null) {
+      // eslint-disable-next-line
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        if (this.state.traces[this.state.level][i].marker.color === this.state.traces[this.state.level][index].marker.color && this.state.traces[this.state.level][i].name === 'highlight') {
+          this.state.traces[this.state.level].splice(i, 1);
+          alreadyPresent = true;
+        }
+      }
+
+      if (!alreadyPresent) {
+        var newSurface = {
+          x: this.state.traces[this.state.level][index].x,
+          y: this.state.traces[this.state.level][index].y,
+          z: this.state.traces[this.state.level][index].z,
+          mode: 'markers',
+          //legendgroup: 'Level ' + idtoLvl[i],
+          marker: {
+            size: 30,
+            symbol: 'circle',
+            color: this.state.traces[this.state.level][index].marker.color,
+            line: {
+              color: 'rgb(217, 217, 217)',
+              width: 0.5
+            },
+            opacity: 0.1
+          },
+          id: this.state.traces[this.state.level][index].id,
+          name: 'highlight',
+          type: 'scatter3d',
+          showlegend: false,
+          hoverinfo: 'skip',
+        }
+        this.state.traces[this.state.level].push(newSurface);
+      }
+
+      this.setState({traces: this.state.traces});
+    }
   }
 
   reset() {
@@ -663,6 +717,11 @@ class App extends React.Component {
           this.state.traces[i][j].marker.opacity = event.target.value;
           // eslint-disable-next-line
           this.state.traces[i][j].visible = true;
+        }
+
+        if (this.state.traces[i][j].name === 'highlight') {
+          this.state.traces[i].splice(j, 1);
+          j--;
         }
       }
 
@@ -796,8 +855,10 @@ class App extends React.Component {
               Level: {this.state.level}
               <br/>
               <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
+
               <br/>
               <br/>
+
               <p style={{margin: 0}}>Show Levels:</p>
               <ul style={{margin: 0}}>
                 {
@@ -808,66 +869,41 @@ class App extends React.Component {
                   )
                 }
               </ul>
+
               <br/>
               <br/>
+
               Size: {this.state.size}
               <br/>
               <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+
               <br/>
               <br/>
-              {
-                lvltoId.map((lvltoId, index) =>
-                  <div key={index}>
-                    Opacity of Level {index}: {this.state.opacity[index]}
-                    <br/>
-                    <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[index]} className="slider" id={index} onChange={this.changeOpacity.bind(this)}/>
-                    <br/>
-                    <br/>
-                  </div>
-                )
-              }
+
+              Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
               <br/>
+              <button onClick={this.showSurface.bind(this)}>Toggle Surface</button>
+
+              <br/>
+
+              <div>
+                <p onClick={this.toggleAdvancedTab.bind(this)}>Advanced Tools</p>
+                <div style={{display: this.state.advanced, marginLeft: 20 + "px"}}>
+                  {
+                    lvltoId.map((lvltoId, index) =>
+                      <div key={index}>
+                        Opacity of Level {index}: {this.state.opacity[index]}
+                        <br/>
+                        <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[index]} className="slider" id={index} onChange={this.changeOpacity.bind(this)}/>
+                        <br/>
+                        <br/>
+                      </div>
+                    )
+                  }
+                </div>
+              </div>
               <button onClick={this.reset.bind(this)}>Reset</button>
-              <br/>
-              <br/>
             </div>
-          </div>
-          <div>
-            <Plot
-              data={this.state.surfaceData}
-              layout={{
-                width: this.state.width/4*3,
-                height: (this.state.height)/10*9,
-                //title: 'spaND Visualization',
-                showlegend: true,
-                scene: {
-                  aspectmode:'cube',
-                  xaxis: {
-                    autorange: false,
-                    range:[0,10]
-                  },
-                  yaxis: {
-                    autorange: false,
-                    range:[0,10]
-                  },
-                  zaxis: {
-                    autorange: false,
-                    range:[0,10]
-                  },
-                },
-                margin: {
-                  l: 50,
-                  r: 50,
-                  b: 50,
-                  t: 20,
-                  pad: 4
-                }
-              }}
-            />
-            <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
-              <input type="number" value={this.state.surfaceMarkerSize} onChange={this.changeSurfaceMarkerSize.bind(this)}/>
-            </div>
-            <button onClick={this.reset.bind(this)}>Reset</button>
           </div>
         </div>
       );
@@ -878,7 +914,7 @@ class App extends React.Component {
       return(
         <div style={{textAlign: "center"}}>
           <h2>Loading...</h2>
-          <p>Depending on the size of your data, this may take a while.</p>
+          <p>Depending on the size of the data, this may take a while.</p>
           <p>Check the <strong>Developer Console</strong> for more information.</p>
         </div>
       );

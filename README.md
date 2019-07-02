@@ -11,11 +11,12 @@ If you are unable to find something here, take a look at the [wiki](https://gith
 ## Table of Contents
 
 1. [Setup Instructions](#setup-instructions)
-2. [Run Program with NPM](#run-npm)
-3. [Run Program with Firebase](#run-firebase)
-4. [Deploy Program to Firebase](#deploy-firebase)
-5. [Other Available Scripts](#other)
-6. [Contributors](#contributors)
+2. [Adding Custom Data](#custom-data)
+3. [Run Program with NPM](#run-npm)
+4. [Run Program with Firebase](#run-firebase)
+5. [Deploy Program to Firebase](#deploy-firebase)
+6. [Other Available Scripts](#other)
+7. [Contributors](#contributors)
 
 ***
 
@@ -32,6 +33,25 @@ In the project directory, run:
 #### `npm install react-plotly.js plotly.js d3`
 #### `npm install -g firebase-tools`
 #### `firebase login`
+
+
+***
+
+## <a name="custom-data"></a>Adding Custom Data _(optional)_
+
+Go to _**public/data**_ and create a new folder.
+
+Add the new data into the new folder. Remember, the following 4 files should be present:
+* _clustering3d.csv_
+* _clusters3d.txt_
+* _merging3d.txt_
+* _stats3d.txt_
+
+After this is complete, open up _**src/App.js**_ and look for the variable _**folder**_.
+
+Change the value of _**folder**_ to`data/<new_folder_name>`( e.g.`var folder = data/newFolder`).
+
+Run the program, and the new data will be used!
 
 ***
 

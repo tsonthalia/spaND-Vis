@@ -4,6 +4,8 @@
 
 This visualization tool helps understand sparsified nested dissection when it is used in 3 dimensions.
 
+If you are unable to find something here, take a look at the [wiki](https://github.com/tsonthalia/spaND-Vis/wiki).
+
 ***
 
 ## Table of Contents

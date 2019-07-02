@@ -4,20 +4,20 @@
 
 This visualization tool helps understand sparsified nested dissection when it is used in 3 dimensions.
 
+This README only includes the basic setup and run process. To see more detailed descriptions on how to use the visualization tool, please go to the [wiki](https://github.com/tsonthalia/spaND-Vis/wiki).
+
 ***
 
 ## Table of Contents
 
 1. [Setup Instructions](#setup-instructions)
 2. [Run Program with NPM](#run-npm)
-3. [Run Program with Firebase](#run-firebase)
-4. [Deploy Program to Firebase](#deploy-firebase)
-5. [Other Available Scripts](#other)
-6. [Contributors](#contributors)
+3. [Other Available Scripts](#other)
+4. [Contributors](#contributors)
 
 ***
 
-## <a name="setup-instructions"></a>Setup Instructions
+## <a name="setup-instructions"></a>Basic Setup Instructions
 
 Dependencies:
 * React-Plotly
@@ -28,8 +28,6 @@ In the project directory, run:
 
 #### `npm install`
 #### `npm install react-plotly.js plotly.js d3`
-#### `npm install -g firebase-tools`
-#### `firebase login`
 
 ***
 
@@ -44,30 +42,6 @@ Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
 
 The page will reload if you make edits.<br>
 You will also see any lint errors in the console.
-
-***
-
-## <a name="run-firebase"></a>Run Program with Firebase
-
-In the project directory, run:
-
-#### `npm run build`
-#### `firebase serve`
-
-Runs the app in production mode.<br>
-Open [http://localhost:5000](http://localhost:5000) to view it in the browser.
-
-***
-
-## <a name="deploy-firebase"></a>Deploy Program to Firebase
-
-In the project directory, run:
-
-#### `npm run build`
-#### `firebase deploy`
-
-Deploys the app in production mode.<br>
-Open [spand-vis.web.app](spand-vis.web.app) to view it in the browser
 
 ***
 

@@ -924,7 +924,7 @@ class App extends React.Component {
                   <button style={{borderRadius: 0, borderStyle: 'solid', borderWidth: 2+'px', borderColor: 'black', padding: 5+'px'}} onClick={this.showSurface.bind(this)}>Show Surface</button>
                   <br/>
                   <br/>
-                  Click to Remove Surface:
+                  Click Surface to Remove:
                   <ul style={{margin: 0}}>
                     {
                       this.state.toggledSurfaces.map((curr, index) =>
@@ -946,8 +946,9 @@ class App extends React.Component {
                 <div style={{display: this.state.advanced[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Size: {this.state.size}
                   <br/>
-                  <br/>
                   <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+                  <br/>
+                  <br/>
 
                   {
                     lvltoId.map((lvltoId, index) =>

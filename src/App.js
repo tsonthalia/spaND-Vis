@@ -655,8 +655,10 @@ class App extends React.Component {
   toggleAdvancedTab(event) {
     if (this.state.advanced === "none") {
       this.setState({advanced: "block"});
+      event.target.innerHTML = "&#9660; Advanced Tools"
     } else {
       this.setState({advanced: "none"});
+      event.target.innerHTML = "&#9654; Advanced Tools"
     }
   }
 
@@ -885,10 +887,13 @@ class App extends React.Component {
               <button onClick={this.showSurface.bind(this)}>Toggle Surface</button>
 
               <br/>
+              <br/>
 
               <div>
-                <p onClick={this.toggleAdvancedTab.bind(this)}>Advanced Tools</p>
-                <div style={{display: this.state.advanced, marginLeft: 20 + "px"}}>
+                <button style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleAdvancedTab.bind(this)}>&#9654; Advanced Tools</button>
+                <br/>
+                <br/>
+                <div style={{display: this.state.advanced, marginLeft: 30 + "px"}}>
                   {
                     lvltoId.map((lvltoId, index) =>
                       <div key={index}>
@@ -902,6 +907,7 @@ class App extends React.Component {
                   }
                 </div>
               </div>
+
               <button onClick={this.reset.bind(this)}>Reset</button>
             </div>
           </div>
@@ -916,6 +922,8 @@ class App extends React.Component {
           <h2>Loading...</h2>
           <p>Depending on the size of the data, this may take a while.</p>
           <p>Check the <strong>Developer Console</strong> for more information.</p>
+          <br/>
+          <p style={{borderWidth: 3+'px', borderStyle: 'solid', borderColor: 'black', display: 'inline-block', padding: 10+'px'}}>If the page is said to be <strong>unresponsive</strong>, please continue to <strong>wait</strong>.</p>
         </div>
       );
     }

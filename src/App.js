@@ -24,7 +24,8 @@ class App extends React.Component {
       levelTextColor: [],
       hiddenPlots: [],
       currCluster: 0,
-      advanced: "none",
+      advanced: ["block", "block", "none"],
+      toggledSurfaces: [],
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -652,13 +653,30 @@ class App extends React.Component {
     this.setState({currCluster: event.target.value});
   }
 
-  toggleAdvancedTab(event) {
-    if (this.state.advanced === "none") {
-      this.setState({advanced: "block"});
-      event.target.innerHTML = "&#9660; Advanced Tools"
+  toggleTab(event) {
+    var str;
+    if (event.target.id === "0") {
+      str = "Levels";
+    } else if (event.target.id === "1") {
+      str = "Surfaces";
+    } else if (event.target.id === "2") {
+      str = "Advanced Tools"
+    }
+
+    console.log(event.target.id);
+    console.log(Number(event.target.id))
+    if (this.state.advanced[Number(event.target.id)] === "none") {
+      // eslint-disable-next-line
+      this.state.advanced[Number(event.target.id)] = "block";
+      event.target.innerHTML = "&#9660; " + str;
+      console.log(this.state.advanced);
+      this.setState({advanced: this.state.advanced});
     } else {
-      this.setState({advanced: "none"});
-      event.target.innerHTML = "&#9654; Advanced Tools"
+      // eslint-disable-next-line
+      this.state.advanced[Number(event.target.id)] = "none";
+      event.target.innerHTML = "&#9654; " + str;
+      console.log(this.state.advanced);
+      this.setState({advanced: this.state.advanced});
     }
   }
 
@@ -666,7 +684,7 @@ class App extends React.Component {
     var alreadyPresent = false;
     var index = null;
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      if (this.state.traces[this.state.level][i].name.includes(this.state.currCluster)) {
+      if (this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) {
         index = i;
       }
     }
@@ -676,11 +694,19 @@ class App extends React.Component {
       for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
         if (this.state.traces[this.state.level][i].marker.color === this.state.traces[this.state.level][index].marker.color && this.state.traces[this.state.level][i].name === 'highlight') {
           this.state.traces[this.state.level].splice(i, 1);
+
+          this.state.toggledSurfaces.splice(this.state.toggledSurfaces.indexOf(this.state.traces[this.state.level][index].name), 1);
+          console.log(this.state.toggledSurfaces);
+
           alreadyPresent = true;
         }
       }
 
       if (!alreadyPresent) {
+        this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
+
+        console.log(this.state.toggledSurfaces);
+
         var newSurface = {
           x: this.state.traces[this.state.level][index].x,
           y: this.state.traces[this.state.level][index].y,
@@ -731,7 +757,7 @@ class App extends React.Component {
       this.state.levelTextColor[i] = "black";
     }
 
-
+    this.setState({toggledSurfaces: []});
     this.setState({opacity: this.state.opacity});
     this.setState({size: 5});
     this.setState({level: 0});
@@ -853,47 +879,67 @@ class App extends React.Component {
                 </div>
               )
             }
+
             <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
-              Level: {this.state.level}
-              <br/>
-              <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
+              <div>
+                <button id="0" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Levels</button>
 
-              <br/>
-              <br/>
+                <div style={{display: this.state.advanced[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                  Level: {this.state.level}
+                  <br/>
+                  <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
 
-              <p style={{margin: 0}}>Show Levels:</p>
-              <ul style={{margin: 0}}>
-                {
-                  lvltoId.map((curr, index) =>
-                    <div key={index}>
-                      <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
-                    </div>
-                  )
-                }
-              </ul>
+                  <br/>
+                  <br/>
 
-              <br/>
-              <br/>
+                  <p style={{margin: 0}}>Show Levels:</p>
+                  <ul style={{margin: 0}}>
+                    {
+                      lvltoId.map((curr, index) =>
+                        <div key={index}>
+                          <li onClick={this.toggleLevel.bind(this)} id={index} style={{color: this.state.levelTextColor[index]}}>Level {index}</li>
+                        </div>
+                      )
+                    }
+                  </ul>
+                </div>
+              </div>
 
-              Size: {this.state.size}
-              <br/>
-              <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
-
-              <br/>
-              <br/>
-
-              Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
-              <br/>
-              <button onClick={this.showSurface.bind(this)}>Toggle Surface</button>
-
-              <br/>
               <br/>
 
               <div>
-                <button style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleAdvancedTab.bind(this)}>&#9654; Advanced Tools</button>
+                <button id="1" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Surfaces</button>
+
+                <div style={{display: this.state.advanced[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                  Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
+                  <br/>
+                  <button onClick={this.showSurface.bind(this)}>Toggle Surface</button>
+                  <br/>
+                  <br/>
+                  Currently Showing Surfaces For:
+                  <ul style={{margin: 0}}>
+                    {
+                      this.state.toggledSurfaces.map((curr, index) =>
+                        <div key={index}>
+                          <li id={index}>{curr}</li>
+                        </div>
+                      )
+                    }
+                  </ul>
+                </div>
+              </div>
+
+
+              <br/>
+
+              <div>
+                <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
-                <br/>
-                <div style={{display: this.state.advanced, marginLeft: 30 + "px"}}>
+                <div style={{display: this.state.advanced[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                  Size: {this.state.size}
+                  <br/>
+                  <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+
                   {
                     lvltoId.map((lvltoId, index) =>
                       <div key={index}>
@@ -905,7 +951,11 @@ class App extends React.Component {
                       </div>
                     )
                   }
+
                 </div>
+
+                <br/>
+
               </div>
 
               <button onClick={this.reset.bind(this)}>Reset</button>

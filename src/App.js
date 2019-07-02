@@ -647,9 +647,6 @@ class App extends React.Component {
 
 
   updateCurrCluster(event) {
-    if (event.target.value < this.state.traces[this.state.level].length) {
-
-    }
     this.setState({currCluster: event.target.value});
   }
 
@@ -663,19 +660,15 @@ class App extends React.Component {
       str = "Advanced Tools"
     }
 
-    console.log(event.target.id);
-    console.log(Number(event.target.id))
     if (this.state.advanced[Number(event.target.id)] === "none") {
       // eslint-disable-next-line
       this.state.advanced[Number(event.target.id)] = "block";
       event.target.innerHTML = "&#9660; " + str;
-      console.log(this.state.advanced);
       this.setState({advanced: this.state.advanced});
     } else {
       // eslint-disable-next-line
       this.state.advanced[Number(event.target.id)] = "none";
       event.target.innerHTML = "&#9654; " + str;
-      console.log(this.state.advanced);
       this.setState({advanced: this.state.advanced});
     }
   }
@@ -684,7 +677,7 @@ class App extends React.Component {
     var alreadyPresent = false;
     var index = null;
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      if (this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) {
+      if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
         index = i;
       }
     }
@@ -692,11 +685,10 @@ class App extends React.Component {
     if (index != null) {
       // eslint-disable-next-line
       for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-        if (this.state.traces[this.state.level][i].marker.color === this.state.traces[this.state.level][index].marker.color && this.state.traces[this.state.level][i].name === 'highlight') {
+        if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name + ' highlight') {
           this.state.traces[this.state.level].splice(i, 1);
 
           this.state.toggledSurfaces.splice(this.state.toggledSurfaces.indexOf(this.state.traces[this.state.level][index].name), 1);
-          console.log(this.state.toggledSurfaces);
 
           alreadyPresent = true;
         }
@@ -704,8 +696,6 @@ class App extends React.Component {
 
       if (!alreadyPresent) {
         this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
-
-        console.log(this.state.toggledSurfaces);
 
         var newSurface = {
           x: this.state.traces[this.state.level][index].x,
@@ -724,7 +714,7 @@ class App extends React.Component {
             opacity: 0.1
           },
           id: this.state.traces[this.state.level][index].id,
-          name: 'highlight',
+          name: this.state.traces[this.state.level][index].name + ' highlight',
           type: 'scatter3d',
           showlegend: false,
           hoverinfo: 'skip',
@@ -734,6 +724,19 @@ class App extends React.Component {
 
       this.setState({traces: this.state.traces});
     }
+  }
+
+  removeSurface(event) {
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if (this.state.traces[this.state.level][i].name === this.state.toggledSurfaces[event.target.id] + ' highlight') {
+        this.state.traces[this.state.level].splice(i, 1);
+        this.state.toggledSurfaces.splice(event.target.id, 1);
+
+        break;
+      }
+    }
+
+    this.setState({traces: this.state.traces});
   }
 
   reset() {
@@ -747,7 +750,7 @@ class App extends React.Component {
           this.state.traces[i][j].visible = true;
         }
 
-        if (this.state.traces[i][j].name === 'highlight') {
+        if (this.state.traces[i][j].name.includes('highlight')) {
           this.state.traces[i].splice(j, 1);
           j--;
         }
@@ -756,6 +759,11 @@ class App extends React.Component {
       // eslint-disable-next-line
       this.state.levelTextColor[i] = "black";
     }
+
+    // eslint-disable-next-line
+    this.state.hiddenPlots[this.state.level] = 'none';
+    // eslint-disable-next-line
+    this.state.hiddenPlots[0] = 'block';
 
     this.setState({toggledSurfaces: []});
     this.setState({opacity: this.state.opacity});
@@ -913,15 +921,15 @@ class App extends React.Component {
                 <div style={{display: this.state.advanced[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
-                  <button onClick={this.showSurface.bind(this)}>Toggle Surface</button>
+                  <button style={{borderRadius: 0, borderStyle: 'solid', borderWidth: 2+'px', borderColor: 'black', padding: 5+'px'}} onClick={this.showSurface.bind(this)}>Show Surface</button>
                   <br/>
                   <br/>
-                  Currently Showing Surfaces For:
+                  Click to Remove Surface:
                   <ul style={{margin: 0}}>
                     {
                       this.state.toggledSurfaces.map((curr, index) =>
                         <div key={index}>
-                          <li id={index}>{curr}</li>
+                          <li id={index} onClick={this.removeSurface.bind(this)}>{curr}</li>
                         </div>
                       )
                     }
@@ -937,6 +945,7 @@ class App extends React.Component {
                 <br/>
                 <div style={{display: this.state.advanced[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Size: {this.state.size}
+                  <br/>
                   <br/>
                   <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
 
@@ -955,25 +964,21 @@ class App extends React.Component {
                 </div>
 
                 <br/>
-
               </div>
 
-              <button onClick={this.reset.bind(this)}>Reset</button>
+              <button style={{borderRadius: 0, borderStyle: 'solid', borderWidth: 2+'px', borderColor: 'red', width: 90+'%', color: 'red', padding: 5+'px'}} onClick={this.reset.bind(this)}>Reset</button>
             </div>
           </div>
         </div>
       );
     } else {
-      // if (this.state.loadingMessage !== "") {
-      //   console.log(this.state.loadingMessage);
-      // }
       return(
         <div style={{textAlign: "center"}}>
           <h2>Loading...</h2>
           <p>Depending on the size of the data, this may take a while.</p>
           <p>Check the <strong>Developer Console</strong> for more information.</p>
           <br/>
-          <p style={{borderWidth: 3+'px', borderStyle: 'solid', borderColor: 'black', display: 'inline-block', padding: 10+'px'}}>If the page is said to be <strong>unresponsive</strong>, please continue to <strong>wait</strong>.</p>
+          <p style={{borderWidth: 3+'px', borderStyle: 'solid', borderColor: 'red', display: 'inline-block', padding: 10+'px'}}>If the page is said to be <strong>unresponsive</strong>, please continue to <strong>wait</strong>.</p>
         </div>
       );
     }

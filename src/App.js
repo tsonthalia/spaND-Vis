@@ -638,7 +638,7 @@ class App extends React.Component {
             zTemp.push(z[triangles[i][j]]);
           }
 
-          var trace2 = {
+          var trace = {
             type: 'mesh3d',
             x: xTemp,
             y: yTemp,
@@ -661,7 +661,7 @@ class App extends React.Component {
             flatshading: true,
           }
 
-          this.state.traces[this.state.level].push(trace2);
+          this.state.traces[this.state.level].push(trace);
         }
 
         this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);

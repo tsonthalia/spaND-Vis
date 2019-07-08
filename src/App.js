@@ -53,7 +53,7 @@ class App extends React.Component {
                   {
                       if(clusters3d.status === 200 || clusters3d.status === 0)
                       {
-                        d3.csv(folder + 'clustering3d.csv').then(function(data) {
+                        d3.csv(folder + 'clustering3d.csv').then(function(clustering3dData) {
                           //console.log(data);
 
                           // self.state.loadingMessage = "Getting Merging Data...";
@@ -133,16 +133,16 @@ class App extends React.Component {
                           var z = [[[]]];
 
                           // eslint-disable-next-line
-                          for (var i = 0; i < data.length; i++) {
-                            if (x[0][data[i].id] === undefined) {
-                              x[0][data[i].id] = [];
-                              y[0][data[i].id] = [];
-                              z[0][data[i].id] = [];
+                          for (var i = 0; i < clustering3dData.length; i++) {
+                            if (x[0][clustering3dData[i].id] === undefined) {
+                              x[0][clustering3dData[i].id] = [];
+                              y[0][clustering3dData[i].id] = [];
+                              z[0][clustering3dData[i].id] = [];
                             }
 
-                            x[0][data[i].id].push(data[i].x);
-                            y[0][data[i].id].push(data[i].y);
-                            z[0][data[i].id].push(data[i].z);
+                            x[0][clustering3dData[i].id].push(clustering3dData[i].x);
+                            y[0][clustering3dData[i].id].push(clustering3dData[i].y);
+                            z[0][clustering3dData[i].id].push(clustering3dData[i].z);
                           }
 
 
@@ -623,7 +623,7 @@ class App extends React.Component {
 
         var triangles = triangulate(points); // triangulate() is imported from a different library
 
-        console.log("Drawing " + triangles.length + " Tetrahedrons...");
+        console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
         //console.log(this.state.traces[0][0].x);
 
         // eslint-disable-next-line

@@ -23,14 +23,15 @@ If you are unable to find something here, take a look at the [wiki](https://gith
 ## <a name="setup-instructions"></a>Setup Instructions
 
 Dependencies:
-* React-Plotly
-* Plotly
-* D3
+* [React-Plotly](https://github.com/plotly/react-plotly.js/)
+* [Plotly](https://github.com/plotly/plotly.js/)
+* [D3](https://github.com/d3/d3)
+* [Delaunay-Triangulate](https://github.com/mikolalysenko/delaunay-triangulate)
 
 In the project directory, run:
 
 #### `npm install`
-#### `npm install react-plotly.js plotly.js d3`
+#### `npm install react-plotly.js plotly.js d3 delaunay-triangulate`
 #### `npm install -g firebase-tools`
 #### `firebase login`
 

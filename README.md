@@ -23,6 +23,7 @@ This visualization tool helps understand sparsified nested dissection when it is
 ## <a name="setup-instructions"></a>Setup Instructions
 
 Dependencies:
+* [React](https://github.com/facebook/react)
 * [React-Plotly](https://github.com/plotly/react-plotly.js/)
 * [Plotly](https://github.com/plotly/plotly.js/)
 * [D3](https://github.com/d3/d3)
@@ -31,7 +32,7 @@ Dependencies:
 In the project directory, run:
 
 #### `npm install`
-#### `npm install react-plotly.js plotly.js d3 delaunay-triangulate`
+#### `npm install react react-plotly.js plotly.js d3 delaunay-triangulate`
 #### `npm install -g firebase-tools`
 #### `firebase login`
 

@@ -4,6 +4,8 @@
 
 This visualization tool helps understand sparsified nested dissection when it is used in 3 dimensions.
 
+![Example Image](images/example_spaND.png)
+
 ***
 
 ## Table of Contents

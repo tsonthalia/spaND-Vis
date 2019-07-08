@@ -204,14 +204,14 @@ class App extends React.Component {
                             // eslint-disable-next-line
                             for (var i = 0; i < x[j].length; i++) {
                               var tempName = "";
-                              var tempColor = "";
+                              //var tempColor = "";
 
                               if (name[i].includes("not_fault")) {
                                 tempName = "Cluster"
-                                tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
+                                //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
                               } else {
                                 tempName = "Fault"
-                                tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
+                                //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                               }
 
                               if (idtoLvl[i] >= j && x[j][i] !== undefined) {

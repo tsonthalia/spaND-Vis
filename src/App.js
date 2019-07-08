@@ -222,7 +222,8 @@ class App extends React.Component {
                                   marker: {
                                     size: self.state.size,
                                     symbol: 'circle',
-                                    color: tempColor,
+                                    //color: tempColor,
+                                    color: '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6),
                                     line: {
                                       color: 'rgb(217, 217, 217)',
                                       width: 0.5
@@ -703,20 +704,32 @@ class App extends React.Component {
         var z = this.state.traces[this.state.level][index].z;
         var colorTemp = this.state.traces[this.state.level][index].marker.color;
 
-        var p = [[]];
+        var points = [[]];
 
         // eslint-disable-next-line
         for (var i = 0; i < x.length; i++) {
-          p[i] = [];
+          points[i] = [];
 
-          p[i].push(x[i]);
-          p[i].push(y[i]);
-          p[i].push(z[i]);
+          points[i].push(x[i]);
+          points[i].push(y[i]);
+          points[i].push(z[i]);
         }
 
-        var triangles = triangulate(p); // triangulate() is imported from a different library
+        // console.log(points);
+        //
+        // for (var i = 0; i < points.length-1; i++) {
+        //   for (var j = i+1; j < points.length; j++) {
+        //     if (points[i][0] === points[j][0] && points[i][1] === points[j][1] && points[i][2] === points[j][2]) {
+        //       points.splice(j, 1);
+        //       j--;
+        //       console.log(j);
+        //     }
+        //   }
+        // }
 
-        console.log("Drawing " + triangles.length + " Tetrahedrons");
+        var triangles = triangulate(points); // triangulate() is imported from a different library
+
+        console.log("Drawing " + triangles.length + " Tetrahedrons...");
         //console.log(this.state.traces[0][0].x);
 
         // eslint-disable-next-line

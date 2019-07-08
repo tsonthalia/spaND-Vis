@@ -2,6 +2,7 @@ import React from 'react';
 import Plot from 'react-plotly.js';
 //import Plotly from '../node_modules/plotly.js/lib/core.js';
 import * as d3 from 'd3';
+import * as triangulate from 'delaunay-triangulate';
 
 class App extends React.Component {
   constructor(props) {
@@ -844,7 +845,102 @@ class App extends React.Component {
       //   color: 'red',
       // };
 
-      //console.log(this.state.traces[this.state.level].length);
+      console.log(this.state.traces[5]);
+
+      var tri = [
+        [0, 1, 2],
+        [0, 2, 3],
+        [0, 3, 1],
+        [1, 2, 3]
+      ];
+
+      var x = this.state.traces[5][50].x;
+      var y = this.state.traces[5][50].y;
+      var z = this.state.traces[5][50].z;
+      var color = this.state.traces[5][50].color;
+
+      var p = [[]];
+      for (var i = 0; i < x.length; i++) {
+        p[i] = [];
+
+        p[i].push(x[i]);
+        p[i].push(y[i]);
+        p[i].push(z[i]);
+      }
+
+      var points = [
+        [0, 0, 0],
+        [0, 0, 1],
+        [0, 1, 0],
+        [0, 1, 1],
+        [1, 0, 0],
+        [1, 0, 1],
+        [1, 1, 0],
+        [1, 1, 1],
+      ]
+
+      var triangles = triangulate(p)
+
+      console.log(triangles)
+      //console.log(this.state.traces[0][0].x);
+
+      var data2 = [];
+
+      for (var i = 0; i < triangles.length; i++) {
+        var xTemp = [];
+        var yTemp = [];
+        var zTemp = [];
+
+        for (var j = 0; j < triangles[i].length; j++) {
+          xTemp.push(x[triangles[i][j]]);
+          yTemp.push(y[triangles[i][j]]);
+          zTemp.push(z[triangles[i][j]]);
+        }
+
+        var trace2 = {
+          type: 'mesh3d',
+          x: xTemp,
+          y: yTemp,
+          z: zTemp,
+          i: [0, 0, 0, 1],
+          j: [1, 2, 3, 2],
+          k: [2, 3, 1, 3],
+          // i: tri.map(function(f) { return f[0] }),
+          // j: tri.map(function(f) { return f[1] }),
+          // k: tri.map(function(f) { return f[2] }),
+          // facecolor: [
+          //   'rgb(0, 0, 0)',
+          //   'rgb(255, 0, 0)',
+          //   'rgb(0, 255, 0)',
+          //   'rgb(0, 0, 255)'
+          // ],
+          color: color,
+          flatshading: true,
+        }
+
+        data2.push(trace2)
+      }
+
+
+
+      // //Example usage
+      // trisurf(
+      //   [
+      //     [0, 1, 2],
+      //     [0, 2, 3],
+      //     [0, 3, 1],
+      //     [1, 2, 3]
+      //   ],
+      //   [0, 1, 0, 0],
+      //   [0, 0, 1, 0],
+      //   [0, 0, 0, 1],
+      //   [
+      //     'rgb(0, 0, 0)',
+      //     'rgb(255, 0, 0)',
+      //     'rgb(0, 255, 0)',
+      //     'rgb(0, 0, 255)'
+      //   ]
+      // )
 
       return (
         <div>
@@ -969,6 +1065,38 @@ class App extends React.Component {
 
               <button style={{borderRadius: 0, borderStyle: 'solid', borderWidth: 2+'px', borderColor: 'red', width: 90+'%', color: 'red', padding: 5+'px'}} onClick={this.reset.bind(this)}>Reset</button>
             </div>
+
+            <Plot
+              data={data2}
+              layout={{
+                width: this.state.width/4*3,
+                height: (this.state.height)/10*9,
+                //title: 'spaND Visualization',
+                showlegend: true,
+                scene: {
+                  aspectmode:'cube',
+                  xaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                  yaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                  zaxis: {
+                    autorange: false,
+                    range:[0,10]
+                  },
+                },
+                margin: {
+                  l: 50,
+                  r: 50,
+                  b: 50,
+                  t: 20,
+                  pad: 4
+                }
+              }}
+            />
           </div>
         </div>
       );

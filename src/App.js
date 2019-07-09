@@ -25,7 +25,7 @@ class App extends React.Component {
       levelTextColor: [],
       hiddenPlots: [],
       currCluster: 0,
-      advanced: ["block", "block", "none"],
+      tabs: ["block", "block", "none"],
       toggledSurfaces: [],
     }
 
@@ -36,7 +36,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/002/" //change this line to change the set of data being used
+    var folder = "data/007/" //change this line to change the set of data being used
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -145,6 +145,8 @@ class App extends React.Component {
                             z[0][clustering3dData[i].id].push(clustering3dData[i].z);
                           }
 
+                          console.log(lvl);
+
 
                           // self.state.loadingMessage = "Getting All Plot Views...";
                           // self.setState({loadingMessage: self.state.loadingMessage});
@@ -169,6 +171,23 @@ class App extends React.Component {
                                     y[i][self.state.childToParent[j]] = [];
                                     z[i][self.state.childToParent[j]] = [];
                                   }
+
+                                  // var xTemp = undefined;
+                                  // var yTemp = undefined;
+                                  // var zTemp = undefined;
+                                  //
+                                  // if (x[i-1][j] !== undefined) {
+                                  //   xTemp = [];
+                                  //   yTemp = [];
+                                  //   zTemp = [];
+                                  //
+                                  //   for (var k = 0; k < x[i-1][j].length; k++) {
+                                  //     xTemp[k] = Math.round((x[i-1][j][k])/100);
+                                  //     yTemp[k] = Math.round((y[i-1][j][k])/100);
+                                  //     zTemp[k] = Math.round(z[i-1][j][k]);
+                                  //   }
+                                  // }
+
                                   x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
                                   y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
                                   z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
@@ -180,6 +199,10 @@ class App extends React.Component {
                               }
                             }
                           }
+
+                          console.log(x[0][2453]);
+                          console.log(y[0][2453]);
+                          console.log(z[0][2453]);
 
                           // for (var i = 0; i < z[0].length; i++) {
                           //   console.log(x[0][0][i]);
@@ -214,7 +237,7 @@ class App extends React.Component {
                                 //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                               }
 
-                              if (idtoLvl[i] >= j && x[j][i] !== undefined) {
+                              if (idtoLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
                                 var trace = {
                                   x: x[j][i], y: y[j][i], z: z[j][i],
                                   mode: 'markers',
@@ -560,16 +583,16 @@ class App extends React.Component {
       str = "Advanced Tools"
     }
 
-    if (this.state.advanced[Number(event.target.id)] === "none") {
+    if (this.state.tabs[Number(event.target.id)] === "none") {
       // eslint-disable-next-line
-      this.state.advanced[Number(event.target.id)] = "block";
+      this.state.tabs[Number(event.target.id)] = "block";
       event.target.innerHTML = "&#9660; " + str;
-      this.setState({advanced: this.state.advanced});
+      this.setState({tabs: this.state.tabs});
     } else {
       // eslint-disable-next-line
-      this.state.advanced[Number(event.target.id)] = "none";
+      this.state.tabs[Number(event.target.id)] = "none";
       event.target.innerHTML = "&#9654; " + str;
-      this.setState({advanced: this.state.advanced});
+      this.setState({tabs: this.state.tabs});
     }
   }
 
@@ -779,10 +802,12 @@ class App extends React.Component {
       var data = [];
 
       for (var i = this.state.level; i < this.state.leveltoId.length; i++) {
-        for (var j = 0; j < this.state.leveltoId[i].length; j++) {
-          //console.log(this.state.traces[this.state.level]);
-          if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
-            data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
+        if (this.state.leveltoId[i] !== undefined) {
+          for (var j = 0; j < this.state.leveltoId[i].length; j++) {
+            //console.log(this.state.traces[this.state.level]);
+            if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
+              data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
+            }
           }
         }
       }
@@ -805,18 +830,23 @@ class App extends React.Component {
                       //title: 'spaND Visualization',
                       showlegend: true,
                       scene: {
-                        aspectmode:'cube',
+                        aspectmode:'manual',
+                        aspectratio: {
+                          x:2,
+                          y:2,
+                          z:1
+                        },
                         xaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                         yaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                         zaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                       },
                       margin: {
@@ -836,7 +866,7 @@ class App extends React.Component {
               <div>
                 <button id="0" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Levels</button>
 
-                <div style={{display: this.state.advanced[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Level: {this.state.level}
                   <br/>
                   <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
@@ -862,7 +892,7 @@ class App extends React.Component {
               <div>
                 <button id="1" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Surfaces</button>
 
-                <div style={{display: this.state.advanced[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
                   <button onClick={this.showSurface.bind(this)}>Show Surface</button>
@@ -887,7 +917,7 @@ class App extends React.Component {
               <div>
                 <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
-                <div style={{display: this.state.advanced[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Size: {this.state.size}
                   <br/>
                   <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>

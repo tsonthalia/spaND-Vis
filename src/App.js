@@ -485,17 +485,21 @@ class App extends React.Component {
   }
 
   changeOpacity(event) {
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
-      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
-        // eslint-disable-next-line
-        this.state.traces[this.state.level][i].marker.opacity = event.target.value;
+    if (this.state.levelTextColor[event.target.id] === 'black') {
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
+        if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].marker.opacity = event.target.value;
+        }
       }
-    }
 
-    // eslint-disable-next-line
-    this.state.opacity[event.target.id] = event.target.value;
-    this.setState({opacity: this.state.opacity});
+      // eslint-disable-next-line
+      this.state.opacity[event.target.id] = event.target.value;
+      this.setState({opacity: this.state.opacity});
+    } else {
+      alert("Cannot Toggle this Slider because Level " + event.target.id + " is no Longer Being Shown.");
+    }
   }
 
   changeLevel(event) { // moving the level slider
@@ -585,6 +589,11 @@ class App extends React.Component {
           this.state.traces[this.state.level].splice(i, 1);
           i--;
           alreadyPresent = true;
+        } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name) {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].mode = 'markers';
+          i--;
+          alreadyPresent = true;
         }
       }
 
@@ -623,45 +632,53 @@ class App extends React.Component {
 
         var triangles = triangulate(points); // triangulate() is imported from a different library
 
-        console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
-        //console.log(this.state.traces[0][0].x);
+        if (triangles.length === 0) {
+          console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with Lines...");
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][index].mode = 'lines+markers';
+        }
 
-        // eslint-disable-next-line
-        for (var i = 0; i < triangles.length; i++) {
-          var xTemp = [];
-          var yTemp = [];
-          var zTemp = [];
+        else {
+          console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
+          //console.log(this.state.traces[0][0].x);
 
-          for (var j = 0; j < triangles[i].length; j++) {
-            xTemp.push(x[triangles[i][j]]);
-            yTemp.push(y[triangles[i][j]]);
-            zTemp.push(z[triangles[i][j]]);
+          // eslint-disable-next-line
+          for (var i = 0; i < triangles.length; i++) {
+            var xTemp = [];
+            var yTemp = [];
+            var zTemp = [];
+
+            for (var j = 0; j < triangles[i].length; j++) {
+              xTemp.push(x[triangles[i][j]]);
+              yTemp.push(y[triangles[i][j]]);
+              zTemp.push(z[triangles[i][j]]);
+            }
+
+            var trace = {
+              type: 'mesh3d',
+              x: xTemp,
+              y: yTemp,
+              z: zTemp,
+              i: [0, 0, 0, 1],
+              j: [1, 2, 3, 2],
+              k: [2, 3, 1, 3],
+              facecolor: [
+                colorTemp,
+                colorTemp,
+                colorTemp,
+                colorTemp
+              ],
+              marker: {
+                opacity: 1,
+              },
+              id: this.state.traces[this.state.level][index].id,
+              name: this.state.traces[this.state.level][index].name + ' highlight',
+
+              flatshading: true,
+            }
+
+            this.state.traces[this.state.level].push(trace);
           }
-
-          var trace = {
-            type: 'mesh3d',
-            x: xTemp,
-            y: yTemp,
-            z: zTemp,
-            i: [0, 0, 0, 1],
-            j: [1, 2, 3, 2],
-            k: [2, 3, 1, 3],
-            facecolor: [
-              colorTemp,
-              colorTemp,
-              colorTemp,
-              colorTemp
-            ],
-            marker: {
-              opacity: 1,
-            },
-            id: this.state.traces[this.state.level][index].id,
-            name: this.state.traces[this.state.level][index].name + ' highlight',
-
-            flatshading: true,
-          }
-
-          this.state.traces[this.state.level].push(trace);
         }
 
         this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
@@ -707,6 +724,11 @@ class App extends React.Component {
         i--;
         // console.log(this.state.traces[this.state.level].length);
 
+        removed = true;
+      } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.toggledSurfaces[event.target.id]) {
+        //console.log(i);
+        // eslint-disable-next-line
+        this.state.traces[this.state.level][i].mode = 'markers';
         removed = true;
       }
     }
@@ -874,7 +896,7 @@ class App extends React.Component {
 
                   {
                     lvltoId.map((lvltoId, index) =>
-                      <div key={index}>
+                      <div key={index} style={{color: this.state.levelTextColor[index]}}>
                         Opacity of Level {index}: {this.state.opacity[index]}
                         <br/>
                         <input type="range" min="0.1" max="1" step="0.1" value={this.state.opacity[index]} className="slider" id={index} onChange={this.changeOpacity.bind(this)}/>

@@ -36,7 +36,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/007/" //change this line to change the set of data being used
+    var folder = "data/M.7.6/" //change this line to change the set of data being used
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()

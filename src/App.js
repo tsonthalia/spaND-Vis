@@ -36,7 +36,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/M.7.6/" //change this line to change the set of data being used
+    var folder = "data/U.70.5/" //change this line to change the set of data being used
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -145,8 +145,6 @@ class App extends React.Component {
                             z[0][clustering3dData[i].id].push(clustering3dData[i].z);
                           }
 
-                          console.log(lvl);
-
 
                           // self.state.loadingMessage = "Getting All Plot Views...";
                           // self.setState({loadingMessage: self.state.loadingMessage});
@@ -199,10 +197,6 @@ class App extends React.Component {
                               }
                             }
                           }
-
-                          console.log(x[0][2453]);
-                          console.log(y[0][2453]);
-                          console.log(z[0][2453]);
 
                           // for (var i = 0; i < z[0].length; i++) {
                           //   console.log(x[0][0][i]);
@@ -685,6 +679,9 @@ class App extends React.Component {
               i: [0, 0, 0, 1],
               j: [1, 2, 3, 2],
               k: [2, 3, 1, 3],
+              // i: [0],
+              // j: [1],
+              // k: [2],
               facecolor: [
                 colorTemp,
                 colorTemp,

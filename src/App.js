@@ -735,6 +735,296 @@ class App extends React.Component {
     }
   }
 
+  showAdvancedSurface(event) {
+    var folder = "data/U.70.5/"
+    var alreadyPresent = false;
+    var index = null;
+    let self = this;
+
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
+        index = i;
+      }
+    }
+
+    d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
+      var uniqueIdCoordinates = [];
+
+
+      //console.log(uniqueIdCoordinateData);
+
+      for (var i = 0; i < uniqueIdCoordinateData.length; i++) {
+        var coordinate = {
+          id: Number(uniqueIdCoordinateData[i].id),
+          tuple: [Number(uniqueIdCoordinateData[i].x), Number(uniqueIdCoordinateData[i].y), Number(uniqueIdCoordinateData[i].z)],
+        }
+
+        uniqueIdCoordinates[uniqueIdCoordinateData[i].id] = coordinate;
+      }
+
+
+      console.log(uniqueIdCoordinates);
+      //console.log(uniqueIdCoordinates.find(findId));
+
+
+      d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+        var adjacencyList = [[]];
+
+        //console.log(adjacencyData);
+
+        for (var i = 0; i < adjacencyData.length; i++) {
+          adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+          adjacencyList[adjacencyData[i].id].pop();
+        }
+
+        console.log(adjacencyList);
+
+        //console.log(adjacencyList);
+
+        var connections = [[]];
+
+        // for (var i = 2; i < 3; i++) {
+        //   console.log(adjacencyList[i]);
+        //   for (var j = 0; j < adjacencyList[i].length; j++) {
+        //     //console.log(adjacencyList[adjacencyList[i][j]]);
+        //     for (var k = 0; k < adjacencyList[adjacencyList[i][j]].length; k++) {
+        //       //console.log(adjacencyList[adjacencyList[i][j]]);
+        //       if (adjacencyList[i].includes(adjacencyList[adjacencyList[i][j]][k])) {
+        //         if (i !== adjacencyList[i][j] && i !== adjacencyList[adjacencyList[i][j]][k] && adjacencyList[i][j] !== adjacencyList[adjacencyList[i][j]][k]) {
+        //           console.log(i + ", " + adjacencyList[i][j] + ", " + adjacencyList[adjacencyList[i][j]][k])
+        //           connections.push([i, adjacencyList[i][j], adjacencyList[adjacencyList[i][j]][k]]);
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+
+        var currCluster = self.state.traces[self.state.level][index];
+
+        //console.log(currCluster);
+        var idsInCluster = [];
+        for (var i = 0; i < currCluster.x.length; i++) {
+          function findId(coord) {
+            //console.log(coord.tuple[0] + ", " + Number(currCluster.x[i]));
+            var xDiff = Math.abs(coord.tuple[0] - Number(currCluster.x[i]));
+            var yDiff = Math.abs(coord.tuple[1] - Number(currCluster.y[i]));
+            var zDiff = Math.abs(coord.tuple[2] - Number(currCluster.z[i]));
+
+            if(xDiff < 0.0001 && yDiff < 0.0001 && zDiff < 0.0001) {
+                return true;
+            }
+
+            // if (coord.tuple[0] === Number(currCluster.x[i]) && coord.tuple[1] === Number(currCluster.y[i]) && coord.tuple[2] === Number(currCluster.z[i])) {
+            //   return true;
+            // }
+
+            return false;
+          }
+
+          //console.log(uniqueIdCoordinates[i].tuple[0] + ", " + Number(currCluster.x[i]));
+
+          var tempId = uniqueIdCoordinates.find(findId);
+
+          if (tempId === undefined) {
+            console.log("Did not find ID for point at index " + i);
+          } else {
+            idsInCluster.push(tempId);
+          }
+        }
+
+        console.log(idsInCluster);
+
+        // console.log(currCluster.x.length);
+        //
+        // var idsInCluster = [];
+        // loop1:
+        //   for (var i = 0; i < currCluster.x.length; i++) {
+        // loop2:
+        //     for (var j = 0; j < uniqueIdCoordinates.length; j++) {
+        //       if (currCluster.x[i] === uniqueIdCoordinates[j].x && currCluster.y[i] === uniqueIdCoordinates[j].y && currCluster.z[i] === uniqueIdCoordinates[j].z) {
+        //         //console.log('Same');
+        //         // if (!idsInCluster.includes(j)) {
+        //         //
+        //         //   break loop2;
+        //         // }
+        //         idsInCluster.push(j);
+        //       }
+        //     }
+        //   }
+        //
+        //
+        //
+        // //idsInCluster.shift();
+        //
+        // console.log(idsInCluster);
+        //
+
+        function includesId(temp) {
+          for (var i = 0; i < idsInCluster.length; i++) {
+            if (idsInCluster[i].id === Number(temp)) {
+              //console.log("true");
+              return true;
+            }
+          }
+          return false;
+        }
+
+
+        function getTuple(tempId) {
+          for (var i = 0; i < idsInCluster.length; i++) {
+            if (idsInCluster[i].id === tempId) {
+              //console.log(idsInCluster[i].tuple + ", " + tempId + ", " + idsInCluster[i].id);
+              return idsInCluster[i].tuple;
+            }
+          }
+          return undefined;
+        }
+
+        // for (var i = 0; i < idsInCluster.length; i++) {
+        //   var currId = idsInCluster[i].id;
+        //   for (var j = 0; j < adjacencyList[currId].length; j++) {
+        //     if (includesId(adjacencyList[currId][j])) {
+        //       console.log("Connection Made");
+        //     }
+        //   }
+        // }
+
+        var prevToNewId = [];
+        for (var i = 0; i < idsInCluster.length; i++) {
+          prevToNewId[idsInCluster[i].id] = i;
+        }
+
+        var connectionsT = [[]];
+        connectionsT[0] = [];
+        connectionsT[1] = [];
+        connectionsT[2] = [];
+
+        for (var i = 0; i < idsInCluster.length; i++) {
+          var currId = idsInCluster[i].id;
+
+          for (var j = 0; j < adjacencyList[currId].length-1; j++) {
+            if (adjacencyList[currId][j] > currId && includesId(adjacencyList[currId][j])) {
+              for (var k = j+1; k < adjacencyList[currId].length; k++) {
+                if (adjacencyList[currId][k] > adjacencyList[currId][j] && includesId(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                  //console.log("Hello there");
+                  if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
+                    //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
+                    connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                    connectionsT[0].push(prevToNewId[currId]);
+                    connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
+                    connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        connections.shift();
+
+        console.log(connections);
+        console.log(connectionsT);
+        //
+        // for (var i = 0; i < connections.length; i++) {
+        //   var tuple1 = getTuple(connections[i][0]);
+        //   var tuple2 = getTuple(connections[i][1]);
+        //   var tuple3 = getTuple(connections[i][2]);
+        //
+        //   if (tuple1 !== undefined && tuple2 !== undefined && tuple3 !== undefined) {
+        //     var trace = {
+        //       type: 'mesh3d',
+        //       x: [tuple1[0], tuple2[0], tuple3[0]],
+        //       y: [tuple1[1], tuple2[1], tuple3[1]],
+        //       z: [tuple1[2], tuple2[2], tuple3[2]],
+        //       i: [0],
+        //       j: [1],
+        //       k: [2],
+        //       // i: [0],
+        //       // j: [1],
+        //       // k: [2],
+        //       facecolor: [
+        //         currCluster.marker.color,
+        //         currCluster.marker.color,
+        //         currCluster.marker.color,
+        //         currCluster.marker.color
+        //       ],
+        //       marker: {
+        //         opacity: 1,
+        //       },
+        //       id: currCluster.id,
+        //       name: currCluster.name + ' highlight',
+        //
+        //       flatshading: true,
+        //     }
+        //
+        //     self.state.traces[4].push(trace);
+        //   } else {
+        //     console.log("Undefined " + tuple1 + ", " + tuple2 + ", " + tuple3);
+        //   }
+        // }
+
+
+
+        var trace = {
+          type: 'mesh3d',
+          x: currCluster.x,
+          y: currCluster.y,
+          z: currCluster.z,
+          i: connectionsT[0],
+          j: connectionsT[1],
+          k: connectionsT[2],
+          // i: [0],
+          // j: [1],
+          // k: [2],
+          // facecolor: [
+          //   currCluster.marker.color,
+          //   currCluster.marker.color,
+          //   currCluster.marker.color,
+          //   currCluster.marker.color
+          // ],
+          colorscale: [
+            [0, currCluster.marker.color],
+            [1, currCluster.marker.color]
+          ],
+          marker: {
+            opacity: 1,
+          },
+          id: currCluster.id,
+          name: currCluster.name + ' highlight',
+
+          flatshading: true,
+        }
+
+        self.state.traces[self.state.level].push(trace);
+
+        console.log("Done");
+        console.log(self.state.traces);
+
+        self.setState({traces: self.state.traces});
+
+        // for (var i = 0; i < adjacencyList.length; i++) {
+        //   //console.log(adjacencyList[i]);
+        //   for (var j = 0; j < adjacencyList[i].length-1; j++) {
+        //     //console.log(adjacencyList[adjacencyList[i][j]]);
+        //     if (adjacencyList[i][j] > i) {
+        //       for (var k = j+1; k < adjacencyList[i].length; k++) {
+        //         //console.log(adjacencyList[i][k]);
+        //         if (adjacencyList[i][k] > adjacencyList[i][j] && adjacencyList[adjacencyList[i][j]].includes(adjacencyList[i][k])) {
+        //           if (i !== Number(adjacencyList[i][j]) && i !== Number(adjacencyList[i][k]) && Number(adjacencyList[i][j]) !== Number(adjacencyList[i][k])) {
+        //             //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
+        //             connections.push([i, Number(adjacencyList[i][j]), Number(adjacencyList[i][k])]);
+        //           }
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+        //
+        // console.log(connections);
+      });
+    });
+  }
+
   removeSurface(event) {
     var removed = false;
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
@@ -893,6 +1183,7 @@ class App extends React.Component {
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
                   <button onClick={this.showSurface.bind(this)}>Show Surface</button>
+                  <button onClick={this.showAdvancedSurface.bind(this)}>Show Advanced Surface</button>
                   <br/>
                   <br/>
                   Click Surface to Remove:

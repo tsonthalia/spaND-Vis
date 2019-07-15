@@ -747,6 +747,16 @@ class App extends React.Component {
       }
     }
 
+    function includesId(idsInCluster, temp) {
+      for (var i = 0; i < idsInCluster.length; i++) {
+        if (idsInCluster[i].id === Number(temp)) {
+          //console.log("true");
+          return true;
+        }
+      }
+      return false;
+    }
+
     d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
       var uniqueIdCoordinates = [];
 
@@ -763,7 +773,7 @@ class App extends React.Component {
       }
 
 
-      console.log(uniqueIdCoordinates);
+      // console.log(uniqueIdCoordinates);
       //console.log(uniqueIdCoordinates.find(findId));
 
 
@@ -776,8 +786,6 @@ class App extends React.Component {
           adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
           adjacencyList[adjacencyData[i].id].pop();
         }
-
-        console.log(adjacencyList);
 
         //console.log(adjacencyList);
 
@@ -800,7 +808,7 @@ class App extends React.Component {
         // }
 
         var currCluster = self.state.traces[self.state.level][index];
-
+        console.log("Converting Coordinates to IDs...");
         //console.log(currCluster);
         var idsInCluster = [];
         for (var i = 0; i < currCluster.x.length; i++) {
@@ -826,73 +834,20 @@ class App extends React.Component {
           var tempId = uniqueIdCoordinates.find(findId);
 
           if (tempId === undefined) {
-            console.log("Did not find ID for point at index " + i);
+            console.log("ERR: Did not find ID for point at index " + i + ". There is most likely something wrong with public/" + folder + "coordinates.csv or public/" + folder + "clustering3d.csv");
           } else {
             idsInCluster.push(tempId);
           }
         }
 
-        console.log(idsInCluster);
-
-        // console.log(currCluster.x.length);
-        //
-        // var idsInCluster = [];
-        // loop1:
-        //   for (var i = 0; i < currCluster.x.length; i++) {
-        // loop2:
-        //     for (var j = 0; j < uniqueIdCoordinates.length; j++) {
-        //       if (currCluster.x[i] === uniqueIdCoordinates[j].x && currCluster.y[i] === uniqueIdCoordinates[j].y && currCluster.z[i] === uniqueIdCoordinates[j].z) {
-        //         //console.log('Same');
-        //         // if (!idsInCluster.includes(j)) {
-        //         //
-        //         //   break loop2;
-        //         // }
-        //         idsInCluster.push(j);
-        //       }
-        //     }
-        //   }
-        //
-        //
-        //
-        // //idsInCluster.shift();
-        //
         // console.log(idsInCluster);
-        //
-
-        function includesId(temp) {
-          for (var i = 0; i < idsInCluster.length; i++) {
-            if (idsInCluster[i].id === Number(temp)) {
-              //console.log("true");
-              return true;
-            }
-          }
-          return false;
-        }
-
-
-        function getTuple(tempId) {
-          for (var i = 0; i < idsInCluster.length; i++) {
-            if (idsInCluster[i].id === tempId) {
-              //console.log(idsInCluster[i].tuple + ", " + tempId + ", " + idsInCluster[i].id);
-              return idsInCluster[i].tuple;
-            }
-          }
-          return undefined;
-        }
-
-        // for (var i = 0; i < idsInCluster.length; i++) {
-        //   var currId = idsInCluster[i].id;
-        //   for (var j = 0; j < adjacencyList[currId].length; j++) {
-        //     if (includesId(adjacencyList[currId][j])) {
-        //       console.log("Connection Made");
-        //     }
-        //   }
-        // }
 
         var prevToNewId = [];
         for (var i = 0; i < idsInCluster.length; i++) {
           prevToNewId[idsInCluster[i].id] = i;
         }
+
+        console.log("Getting Connections Between Points...");
 
         var connectionsT = [[]];
         connectionsT[0] = [];
@@ -903,9 +858,9 @@ class App extends React.Component {
           var currId = idsInCluster[i].id;
 
           for (var j = 0; j < adjacencyList[currId].length-1; j++) {
-            if (adjacencyList[currId][j] > currId && includesId(adjacencyList[currId][j])) {
+            if (adjacencyList[currId][j] > currId && includesId(idsInCluster, adjacencyList[currId][j])) {
               for (var k = j+1; k < adjacencyList[currId].length; k++) {
-                if (adjacencyList[currId][k] > adjacencyList[currId][j] && includesId(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                if (adjacencyList[currId][k] > adjacencyList[currId][j] && includesId(idsInCluster, adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
                   //console.log("Hello there");
                   if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
                     //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
@@ -921,49 +876,6 @@ class App extends React.Component {
         }
 
         connections.shift();
-
-        console.log(connections);
-        console.log(connectionsT);
-        //
-        // for (var i = 0; i < connections.length; i++) {
-        //   var tuple1 = getTuple(connections[i][0]);
-        //   var tuple2 = getTuple(connections[i][1]);
-        //   var tuple3 = getTuple(connections[i][2]);
-        //
-        //   if (tuple1 !== undefined && tuple2 !== undefined && tuple3 !== undefined) {
-        //     var trace = {
-        //       type: 'mesh3d',
-        //       x: [tuple1[0], tuple2[0], tuple3[0]],
-        //       y: [tuple1[1], tuple2[1], tuple3[1]],
-        //       z: [tuple1[2], tuple2[2], tuple3[2]],
-        //       i: [0],
-        //       j: [1],
-        //       k: [2],
-        //       // i: [0],
-        //       // j: [1],
-        //       // k: [2],
-        //       facecolor: [
-        //         currCluster.marker.color,
-        //         currCluster.marker.color,
-        //         currCluster.marker.color,
-        //         currCluster.marker.color
-        //       ],
-        //       marker: {
-        //         opacity: 1,
-        //       },
-        //       id: currCluster.id,
-        //       name: currCluster.name + ' highlight',
-        //
-        //       flatshading: true,
-        //     }
-        //
-        //     self.state.traces[4].push(trace);
-        //   } else {
-        //     console.log("Undefined " + tuple1 + ", " + tuple2 + ", " + tuple3);
-        //   }
-        // }
-
-
 
         var trace = {
           type: 'mesh3d',
@@ -982,10 +894,7 @@ class App extends React.Component {
           //   currCluster.marker.color,
           //   currCluster.marker.color
           // ],
-          colorscale: [
-            [0, currCluster.marker.color],
-            [1, currCluster.marker.color]
-          ],
+          color: currCluster.marker.color,
           marker: {
             opacity: 1,
           },
@@ -997,30 +906,13 @@ class App extends React.Component {
 
         self.state.traces[self.state.level].push(trace);
 
-        console.log("Done");
-        console.log(self.state.traces);
+        console.log("Plotting Surface from " + currCluster.name + "...");
+        //console.log(self.state.traces);
+
+        self.state.toggledSurfaces.push(currCluster.name);
+        self.state.toggledSurfaces.sort();
 
         self.setState({traces: self.state.traces});
-
-        // for (var i = 0; i < adjacencyList.length; i++) {
-        //   //console.log(adjacencyList[i]);
-        //   for (var j = 0; j < adjacencyList[i].length-1; j++) {
-        //     //console.log(adjacencyList[adjacencyList[i][j]]);
-        //     if (adjacencyList[i][j] > i) {
-        //       for (var k = j+1; k < adjacencyList[i].length; k++) {
-        //         //console.log(adjacencyList[i][k]);
-        //         if (adjacencyList[i][k] > adjacencyList[i][j] && adjacencyList[adjacencyList[i][j]].includes(adjacencyList[i][k])) {
-        //           if (i !== Number(adjacencyList[i][j]) && i !== Number(adjacencyList[i][k]) && Number(adjacencyList[i][j]) !== Number(adjacencyList[i][k])) {
-        //             //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
-        //             connections.push([i, Number(adjacencyList[i][j]), Number(adjacencyList[i][k])]);
-        //           }
-        //         }
-        //       }
-        //     }
-        //   }
-        // }
-        //
-        // console.log(connections);
       });
     });
   }

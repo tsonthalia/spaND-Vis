@@ -36,7 +36,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/U.70.5/" //change this line to change the set of data being used
+    var folder = "data/A.70.5/" //change this line to change the set of data being used
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -736,7 +736,7 @@ class App extends React.Component {
   }
 
   showExactSurface(event) {
-    var folder = "data/U.70.5/"
+    var folder = "data/A.70.5/"
     var index = null;
     let self = this;
 

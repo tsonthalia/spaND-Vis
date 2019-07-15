@@ -1,7 +1,7 @@
 # Data Naming Instructions
 
 ## Part 1 - Type of Data
-The first part represents the name of the type of data set (e.g. M = modeled, U = unmodeled)
+The first part represents the name of the type of data set (e.g. M = modeled, A = Aquifer)
 
 ## Part 2 - Number of Points
 The next part represents the number of data points in thousands in the data set (e.g. 50 = 50,000 points)

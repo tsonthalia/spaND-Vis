@@ -25,7 +25,7 @@ class App extends React.Component {
       levelTextColor: [],
       hiddenPlots: [],
       currCluster: 0,
-      advanced: ["block", "block", "none"],
+      tabs: ["block", "block", "none"],
       toggledSurfaces: [],
     }
 
@@ -36,7 +36,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/002/" //change this line to change the set of data being used
+    var folder = "data/U.70.5/" //change this line to change the set of data being used
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -169,6 +169,23 @@ class App extends React.Component {
                                     y[i][self.state.childToParent[j]] = [];
                                     z[i][self.state.childToParent[j]] = [];
                                   }
+
+                                  // var xTemp = undefined;
+                                  // var yTemp = undefined;
+                                  // var zTemp = undefined;
+                                  //
+                                  // if (x[i-1][j] !== undefined) {
+                                  //   xTemp = [];
+                                  //   yTemp = [];
+                                  //   zTemp = [];
+                                  //
+                                  //   for (var k = 0; k < x[i-1][j].length; k++) {
+                                  //     xTemp[k] = Math.round((x[i-1][j][k])/100);
+                                  //     yTemp[k] = Math.round((y[i-1][j][k])/100);
+                                  //     zTemp[k] = Math.round(z[i-1][j][k]);
+                                  //   }
+                                  // }
+
                                   x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
                                   y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
                                   z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
@@ -214,7 +231,7 @@ class App extends React.Component {
                                 //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                               }
 
-                              if (idtoLvl[i] >= j && x[j][i] !== undefined) {
+                              if (idtoLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
                                 var trace = {
                                   x: x[j][i], y: y[j][i], z: z[j][i],
                                   mode: 'markers',
@@ -560,16 +577,16 @@ class App extends React.Component {
       str = "Advanced Tools"
     }
 
-    if (this.state.advanced[Number(event.target.id)] === "none") {
+    if (this.state.tabs[Number(event.target.id)] === "none") {
       // eslint-disable-next-line
-      this.state.advanced[Number(event.target.id)] = "block";
+      this.state.tabs[Number(event.target.id)] = "block";
       event.target.innerHTML = "&#9660; " + str;
-      this.setState({advanced: this.state.advanced});
+      this.setState({tabs: this.state.tabs});
     } else {
       // eslint-disable-next-line
-      this.state.advanced[Number(event.target.id)] = "none";
+      this.state.tabs[Number(event.target.id)] = "none";
       event.target.innerHTML = "&#9654; " + str;
-      this.setState({advanced: this.state.advanced});
+      this.setState({tabs: this.state.tabs});
     }
   }
 
@@ -662,6 +679,9 @@ class App extends React.Component {
               i: [0, 0, 0, 1],
               j: [1, 2, 3, 2],
               k: [2, 3, 1, 3],
+              // i: [0],
+              // j: [1],
+              // k: [2],
               facecolor: [
                 colorTemp,
                 colorTemp,
@@ -713,6 +733,188 @@ class App extends React.Component {
 
       this.setState({traces: this.state.traces});
     }
+  }
+
+  showAdvancedSurface(event) {
+    var folder = "data/U.70.5/"
+    var alreadyPresent = false;
+    var index = null;
+    let self = this;
+
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
+        index = i;
+      }
+    }
+
+    function includesId(idsInCluster, temp) {
+      for (var i = 0; i < idsInCluster.length; i++) {
+        if (idsInCluster[i].id === Number(temp)) {
+          //console.log("true");
+          return true;
+        }
+      }
+      return false;
+    }
+
+    d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
+      var uniqueIdCoordinates = [];
+
+
+      //console.log(uniqueIdCoordinateData);
+
+      for (var i = 0; i < uniqueIdCoordinateData.length; i++) {
+        var coordinate = {
+          id: Number(uniqueIdCoordinateData[i].id),
+          tuple: [Number(uniqueIdCoordinateData[i].x), Number(uniqueIdCoordinateData[i].y), Number(uniqueIdCoordinateData[i].z)],
+        }
+
+        uniqueIdCoordinates[uniqueIdCoordinateData[i].id] = coordinate;
+      }
+
+
+      // console.log(uniqueIdCoordinates);
+      //console.log(uniqueIdCoordinates.find(findId));
+
+
+      d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+        var adjacencyList = [[]];
+
+        //console.log(adjacencyData);
+
+        for (var i = 0; i < adjacencyData.length; i++) {
+          adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+          adjacencyList[adjacencyData[i].id].pop();
+        }
+
+        //console.log(adjacencyList);
+
+        var connections = [[]];
+
+        // for (var i = 2; i < 3; i++) {
+        //   console.log(adjacencyList[i]);
+        //   for (var j = 0; j < adjacencyList[i].length; j++) {
+        //     //console.log(adjacencyList[adjacencyList[i][j]]);
+        //     for (var k = 0; k < adjacencyList[adjacencyList[i][j]].length; k++) {
+        //       //console.log(adjacencyList[adjacencyList[i][j]]);
+        //       if (adjacencyList[i].includes(adjacencyList[adjacencyList[i][j]][k])) {
+        //         if (i !== adjacencyList[i][j] && i !== adjacencyList[adjacencyList[i][j]][k] && adjacencyList[i][j] !== adjacencyList[adjacencyList[i][j]][k]) {
+        //           console.log(i + ", " + adjacencyList[i][j] + ", " + adjacencyList[adjacencyList[i][j]][k])
+        //           connections.push([i, adjacencyList[i][j], adjacencyList[adjacencyList[i][j]][k]]);
+        //         }
+        //       }
+        //     }
+        //   }
+        // }
+
+        var currCluster = self.state.traces[self.state.level][index];
+        console.log("Converting Coordinates to IDs...");
+        //console.log(currCluster);
+        var idsInCluster = [];
+        for (var i = 0; i < currCluster.x.length; i++) {
+          function findId(coord) {
+            //console.log(coord.tuple[0] + ", " + Number(currCluster.x[i]));
+            var xDiff = Math.abs(coord.tuple[0] - Number(currCluster.x[i]));
+            var yDiff = Math.abs(coord.tuple[1] - Number(currCluster.y[i]));
+            var zDiff = Math.abs(coord.tuple[2] - Number(currCluster.z[i]));
+
+            if(xDiff < 0.0001 && yDiff < 0.0001 && zDiff < 0.0001) {
+                return true;
+            }
+
+            // if (coord.tuple[0] === Number(currCluster.x[i]) && coord.tuple[1] === Number(currCluster.y[i]) && coord.tuple[2] === Number(currCluster.z[i])) {
+            //   return true;
+            // }
+
+            return false;
+          }
+
+          //console.log(uniqueIdCoordinates[i].tuple[0] + ", " + Number(currCluster.x[i]));
+
+          var tempId = uniqueIdCoordinates.find(findId);
+
+          if (tempId === undefined) {
+            console.log("ERR: Did not find ID for point at index " + i + ". There is most likely something wrong with public/" + folder + "coordinates.csv or public/" + folder + "clustering3d.csv");
+          } else {
+            idsInCluster.push(tempId);
+          }
+        }
+
+        // console.log(idsInCluster);
+
+        var prevToNewId = [];
+        for (var i = 0; i < idsInCluster.length; i++) {
+          prevToNewId[idsInCluster[i].id] = i;
+        }
+
+        console.log("Getting Connections Between Points...");
+
+        var connectionsT = [[]];
+        connectionsT[0] = [];
+        connectionsT[1] = [];
+        connectionsT[2] = [];
+
+        for (var i = 0; i < idsInCluster.length; i++) {
+          var currId = idsInCluster[i].id;
+
+          for (var j = 0; j < adjacencyList[currId].length-1; j++) {
+            if (adjacencyList[currId][j] > currId && includesId(idsInCluster, adjacencyList[currId][j])) {
+              for (var k = j+1; k < adjacencyList[currId].length; k++) {
+                if (adjacencyList[currId][k] > adjacencyList[currId][j] && includesId(idsInCluster, adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                  //console.log("Hello there");
+                  if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
+                    //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
+                    connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                    connectionsT[0].push(prevToNewId[currId]);
+                    connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
+                    connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        connections.shift();
+
+        var trace = {
+          type: 'mesh3d',
+          x: currCluster.x,
+          y: currCluster.y,
+          z: currCluster.z,
+          i: connectionsT[0],
+          j: connectionsT[1],
+          k: connectionsT[2],
+          // i: [0],
+          // j: [1],
+          // k: [2],
+          // facecolor: [
+          //   currCluster.marker.color,
+          //   currCluster.marker.color,
+          //   currCluster.marker.color,
+          //   currCluster.marker.color
+          // ],
+          color: currCluster.marker.color,
+          marker: {
+            opacity: 1,
+          },
+          id: currCluster.id,
+          name: currCluster.name + ' highlight',
+
+          flatshading: true,
+        }
+
+        self.state.traces[self.state.level].push(trace);
+
+        console.log("Plotting Surface from " + currCluster.name + "...");
+        //console.log(self.state.traces);
+
+        self.state.toggledSurfaces.push(currCluster.name);
+        self.state.toggledSurfaces.sort();
+
+        self.setState({traces: self.state.traces});
+      });
+    });
   }
 
   removeSurface(event) {
@@ -779,10 +981,12 @@ class App extends React.Component {
       var data = [];
 
       for (var i = this.state.level; i < this.state.leveltoId.length; i++) {
-        for (var j = 0; j < this.state.leveltoId[i].length; j++) {
-          //console.log(this.state.traces[this.state.level]);
-          if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
-            data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
+        if (this.state.leveltoId[i] !== undefined) {
+          for (var j = 0; j < this.state.leveltoId[i].length; j++) {
+            //console.log(this.state.traces[this.state.level]);
+            if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
+              data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
+            }
           }
         }
       }
@@ -805,18 +1009,23 @@ class App extends React.Component {
                       //title: 'spaND Visualization',
                       showlegend: true,
                       scene: {
-                        aspectmode:'cube',
+                        aspectmode:'manual',
+                        aspectratio: {
+                          x:2,
+                          y:2,
+                          z:1
+                        },
                         xaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                         yaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                         zaxis: {
-                          autorange: false,
-                          range:[0,10]
+                          autorange: true,
+                          //range:[0,10]
                         },
                       },
                       margin: {
@@ -836,7 +1045,7 @@ class App extends React.Component {
               <div>
                 <button id="0" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Levels</button>
 
-                <div style={{display: this.state.advanced[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Level: {this.state.level}
                   <br/>
                   <input type="range" min="0" max={this.state.leveltoId.length-1} step="1" value={this.state.level} className="slider" id="myRange" onChange={this.changeLevel.bind(this)}/>
@@ -862,10 +1071,11 @@ class App extends React.Component {
               <div>
                 <button id="1" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Surfaces</button>
 
-                <div style={{display: this.state.advanced[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
                   <button onClick={this.showSurface.bind(this)}>Show Surface</button>
+                  <button onClick={this.showAdvancedSurface.bind(this)}>Show Advanced Surface</button>
                   <br/>
                   <br/>
                   Click Surface to Remove:
@@ -887,7 +1097,7 @@ class App extends React.Component {
               <div>
                 <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
-                <div style={{display: this.state.advanced[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                <div style={{display: this.state.tabs[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Size: {this.state.size}
                   <br/>
                   <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>

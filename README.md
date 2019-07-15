@@ -45,6 +45,8 @@ Go to _**public/data**_ and create a new folder.
 
 Add the new data into the new folder. Remember, the following 4 files should be present:
 * _clustering3d.csv_
+* _coordinates.csv_
+* _adjacency.csv_
 * _clusters3d.txt_
 * _merging3d.txt_
 * _stats3d.txt_

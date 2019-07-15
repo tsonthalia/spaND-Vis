@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "browserslist": "^4.6.3",
-    "caniuse-lite": "^1.0.30000974",
+    "browserslist": "^4.6.6",
+    "caniuse-lite": "^1.0.30000984",
     "d3": "^5.9.7",
     "delaunay-triangulate": "^1.1.6",
     "jquery-csv": "^1.0.3",

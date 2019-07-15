@@ -590,7 +590,7 @@ class App extends React.Component {
     }
   }
 
-  showSurface(event) {
+  showApproximateSurface(event) {
     var alreadyPresent = false;
     var index = null;
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
@@ -735,9 +735,8 @@ class App extends React.Component {
     }
   }
 
-  showAdvancedSurface(event) {
+  showExactSurface(event) {
     var folder = "data/U.70.5/"
-    var alreadyPresent = false;
     var index = null;
     let self = this;
 
@@ -746,6 +745,8 @@ class App extends React.Component {
         index = i;
       }
     }
+
+    var currCluster = self.state.traces[self.state.level][index];
 
     function includesId(idsInCluster, temp) {
       for (var i = 0; i < idsInCluster.length; i++) {
@@ -807,11 +808,13 @@ class App extends React.Component {
         //   }
         // }
 
-        var currCluster = self.state.traces[self.state.level][index];
         console.log("Converting Coordinates to IDs...");
         //console.log(currCluster);
         var idsInCluster = [];
+        // eslint-disable-next-line
         for (var i = 0; i < currCluster.x.length; i++) {
+          //console.log(uniqueIdCoordinates[i].tuple[0] + ", " + Number(currCluster.x[i]));
+          // eslint-disable-next-line
           function findId(coord) {
             //console.log(coord.tuple[0] + ", " + Number(currCluster.x[i]));
             var xDiff = Math.abs(coord.tuple[0] - Number(currCluster.x[i]));
@@ -829,8 +832,6 @@ class App extends React.Component {
             return false;
           }
 
-          //console.log(uniqueIdCoordinates[i].tuple[0] + ", " + Number(currCluster.x[i]));
-
           var tempId = uniqueIdCoordinates.find(findId);
 
           if (tempId === undefined) {
@@ -843,6 +844,7 @@ class App extends React.Component {
         // console.log(idsInCluster);
 
         var prevToNewId = [];
+        // eslint-disable-next-line
         for (var i = 0; i < idsInCluster.length; i++) {
           prevToNewId[idsInCluster[i].id] = i;
         }
@@ -854,6 +856,7 @@ class App extends React.Component {
         connectionsT[1] = [];
         connectionsT[2] = [];
 
+        // eslint-disable-next-line
         for (var i = 0; i < idsInCluster.length; i++) {
           var currId = idsInCluster[i].id;
 
@@ -1074,8 +1077,8 @@ class App extends React.Component {
                 <div style={{display: this.state.tabs[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
-                  <button onClick={this.showSurface.bind(this)}>Show Surface</button>
-                  <button onClick={this.showAdvancedSurface.bind(this)}>Show Advanced Surface</button>
+                  <button onClick={this.showExactSurface.bind(this)}>Show Exact Surface</button>
+                  <button onClick={this.showApproximateSurface.bind(this)}>Show Approximate Surface</button>
                   <br/>
                   <br/>
                   Click Surface to Remove:

@@ -51,9 +51,9 @@ Add the new data into the new folder. Remember, the following 4 files should be 
 * _merging3d.txt_
 * _stats3d.txt_
 
-After this is complete, open up _**src/App.js**_ and look for the variable _**folder**_.
+After this is complete, open up _**src/App.js**_ and look for the first occurence of the variable _**folder**_. 
 
-Change the value of _**folder**_ to`data/<new_folder_name>`( e.g.`folder: data/newFolder`).
+The existing value of _**folder**_ should be a string. Change the value of _**folder**_ to`data/<new_folder_name>`( e.g.`folder: data/newFolder`).
 
 Run the program, and the new data will be used!
 

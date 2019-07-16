@@ -55,419 +55,214 @@ class App extends React.Component {
                       if(clusters3d.status === 200 || clusters3d.status === 0)
                       {
                         d3.csv(folder + 'clustering3d.csv').then(function(clustering3dData) {
-                          //console.log(data);
+                          d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
+                            //console.log(data);
+                            console.group("Initial Loading Sequence");
+                            // self.state.loadingMessage = "Getting Merging Data...";
+                            // self.setState({loadingMessage: self.state.loadingMessage});
+                            console.time("Merging Data");
+                            //console.log("Getting Merging Data...")
+                            //self.forceUpdate();
 
-                          // self.state.loadingMessage = "Getting Merging Data...";
-                          // self.setState({loadingMessage: self.state.loadingMessage});
+                            var merging3dText = merging3d.responseText.split('\n');
 
-                          console.log("Getting Merging Data...")
-                          //self.forceUpdate();
+                            for (var i = 1; i < merging3dText.length; i++) {
+                              var line = merging3dText[i].split(';');
 
-                          var merging3dText = merging3d.responseText.split('\n');
-
-                          for (var i = 1; i < merging3dText.length; i++) {
-                            var line = merging3dText[i].split(';');
-
-                            self.state.childToParent[line[0]] = line[1];
-                          }
-
-                          self.state.loadingMessage = "Getting Relationship Between ID and Level...";
-                          self.setState({loadingMessage: self.state.loadingMessage});
-
-                          console.log("Getting Relationship Between ID and Level...");
-                          //alert("Got Merging Data");
-
-                          //var id = [];
-                          var lvl = [[]]; // Holds ID and corresponding levels
-                          var mergeLvl = []; // Holds merge level
-                          var name = []; // Holds name of each cluster
-
-                          var idtoLvl = [[]]; // Holds conversion from id to level
-
-                          var clusters3dText = clusters3d.responseText.split('\n');
-
-                          // eslint-disable-next-line
-                          for (var i = 1; i < clusters3dText.length-1; i++) {
-                            var curr = clusters3dText[i].split(';')
-                            if (lvl[curr[1]] === undefined) {
-                              lvl[curr[1]] = [];
-                            }
-                            if (idtoLvl[curr[0]] === undefined) {
-                              idtoLvl[curr[0]] = [];
+                              self.state.childToParent[line[0]] = line[1];
                             }
 
-                            lvl[curr[1]].push(curr[0]);
-                            mergeLvl.push(curr[2]);
-                            name.push(curr[3]);
+                            self.state.loadingMessage = "Getting Relationship Between ID and Level...";
+                            self.setState({loadingMessage: self.state.loadingMessage});
 
-                            idtoLvl[curr[0]].push(curr[1]);
-                          }
+                            console.timeEnd("Merging Data");
+                            console.time("ID to Level Conversion Table");
+                            //console.log("Getting Relationship Between ID and Level...");
+                            //alert("Got Merging Data");
 
-                          // self.state.loadingMessage = "Getting Initial Plot View...";
-                          // self.setState({loadingMessage: self.state.loadingMessage});
+                            //var id = [];
+                            var lvl = [[]]; // Holds ID and corresponding levels
+                            var mergeLvl = []; // Holds merge level
+                            var name = []; // Holds name of each cluster
 
-                          console.log("Getting Initial Plot View...");
-                          //alert("Got ID to Level");
+                            var idtoLvl = [[]]; // Holds conversion from id to level
 
-                          self.state.leveltoId = lvl;
-                          //self.setState({leveltoId: self.state.leveltoId});
+                            var clusters3dText = clusters3d.responseText.split('\n');
 
-                          self.state.idtoLevel = idtoLvl;
-                          //self.setState({idtoLevel: self.state.idtoLevel});
-
-                          // eslint-disable-next-line
-                          for (var i = 0; i < self.state.leveltoId.length; i++) {
-                           self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
-                           self.state.levelTextColor.push("black");
-
-                           if (i===0) {
-                             self.state.hiddenPlots.push("block");
-                           } else {
-                             self.state.hiddenPlots.push("none");
-                           }
-                          }
-
-                          //self.setState({opacity: self.state.opacity});
-
-                          var x = [[[]]];
-                          var y = [[[]]];
-                          var z = [[[]]];
-
-                          // eslint-disable-next-line
-                          for (var i = 0; i < clustering3dData.length; i++) {
-                            if (x[0][clustering3dData[i].id] === undefined) {
-                              x[0][clustering3dData[i].id] = [];
-                              y[0][clustering3dData[i].id] = [];
-                              z[0][clustering3dData[i].id] = [];
-                            }
-
-                            x[0][clustering3dData[i].id].push(clustering3dData[i].x);
-                            y[0][clustering3dData[i].id].push(clustering3dData[i].y);
-                            z[0][clustering3dData[i].id].push(clustering3dData[i].z);
-                          }
-
-
-                          // self.state.loadingMessage = "Getting All Plot Views...";
-                          // self.setState({loadingMessage: self.state.loadingMessage});
-
-                          console.log("Getting All Plot Views...");
-                          //alert("Got Initial Plot View");
-
-                          //eslint-disable-next-line
-                          for (var i = 1; i < lvl.length; i++) {
-                            for (var j = x[i-1].length-1; j >= 0; j--) {
-
-                              if (x[i] === undefined) {
-                                x[i] = [[]];
-                                y[i] = [[]];
-                                z[i] = [[]];
+                            // eslint-disable-next-line
+                            for (var i = 1; i < clusters3dText.length-1; i++) {
+                              var curr = clusters3dText[i].split(';')
+                              if (lvl[curr[1]] === undefined) {
+                                lvl[curr[1]] = [];
+                              }
+                              if (idtoLvl[curr[0]] === undefined) {
+                                idtoLvl[curr[0]] = [];
                               }
 
-                              if (i !== 1) {
-                                if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
-                                  if (x[i][self.state.childToParent[j]] === undefined) {
-                                    x[i][self.state.childToParent[j]] = [];
-                                    y[i][self.state.childToParent[j]] = [];
-                                    z[i][self.state.childToParent[j]] = [];
+                              lvl[curr[1]].push(curr[0]);
+                              mergeLvl.push(curr[2]);
+                              name.push(curr[3]);
+
+                              idtoLvl[curr[0]].push(curr[1]);
+                            }
+
+                            // self.state.loadingMessage = "Getting Initial Plot View...";
+                            // self.setState({loadingMessage: self.state.loadingMessage});
+
+                            console.timeEnd("ID to Level Conversion Table");
+                            console.time("Initial Plot View");
+                            //alert("Got ID to Level");
+
+                            self.state.leveltoId = lvl;
+                            //self.setState({leveltoId: self.state.leveltoId});
+
+                            self.state.idtoLevel = idtoLvl;
+                            //self.setState({idtoLevel: self.state.idtoLevel});
+
+                            // eslint-disable-next-line
+                            for (var i = 0; i < self.state.leveltoId.length; i++) {
+                             self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
+                             self.state.levelTextColor.push("black");
+
+                             if (i===0) {
+                               self.state.hiddenPlots.push("block");
+                             } else {
+                               self.state.hiddenPlots.push("none");
+                             }
+                            }
+
+                            //self.setState({opacity: self.state.opacity});
+
+                            var x = [[[]]];
+                            var y = [[[]]];
+                            var z = [[[]]];
+                            var pointId = [[[]]];
+
+                            // eslint-disable-next-line
+                            for (var i = 0; i < clustering3dData.length; i++) {
+                              if (x[0][clustering3dData[i].id] === undefined) {
+                                x[0][clustering3dData[i].id] = [];
+                                y[0][clustering3dData[i].id] = [];
+                                z[0][clustering3dData[i].id] = [];
+                                pointId[0][clustering3dData[i].id] = [];
+                              }
+
+                              x[0][clustering3dData[i].id].push(clustering3dData[i].x);
+                              y[0][clustering3dData[i].id].push(clustering3dData[i].y);
+                              z[0][clustering3dData[i].id].push(clustering3dData[i].z);
+                              pointId[0][clustering3dData[i].id].push(uniqueIdCoordinateData[i].id);
+                            }
+
+
+                            // self.state.loadingMessage = "Getting All Plot Views...";
+                            // self.setState({loadingMessage: self.state.loadingMessage});
+
+                            console.timeEnd("Initial Plot View");
+                            console.time("All Plot Views");
+                            //console.log("Getting All Plot Views...");
+                            //alert("Got Initial Plot View");
+
+                            //eslint-disable-next-line
+                            for (var i = 1; i < lvl.length; i++) {
+                              for (var j = x[i-1].length-1; j >= 0; j--) {
+
+                                if (x[i] === undefined) {
+                                  x[i] = [[]];
+                                  y[i] = [[]];
+                                  z[i] = [[]];
+                                  pointId[i] = [[]];
+                                }
+
+                                if (i !== 1) {
+                                  if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
+                                    if (x[i][self.state.childToParent[j]] === undefined) {
+                                      x[i][self.state.childToParent[j]] = [];
+                                      y[i][self.state.childToParent[j]] = [];
+                                      z[i][self.state.childToParent[j]] = [];
+                                      pointId[i][self.state.childToParent[j]] = [];
+                                    }
+
+                                    x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
+                                    y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
+                                    z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+                                    pointId[i][self.state.childToParent[j]].push.apply(pointId[i][self.state.childToParent[j]], pointId[i-1][j]);
+                                  }
+                                } else {
+                                  x[1] = x[0];
+                                  y[1] = y[0];
+                                  z[1] = z[0];
+                                  pointId[1] = pointId[0];
+                                }
+                              }
+                            }
+
+                            console.timeEnd("All Plot Views");
+                            console.time("Plot Traces");
+
+                            //console.log("Creating Plot Traces...");
+                            //alert("Generated All Plot Views");
+
+                            self.state.x = x;
+                            self.state.y = y;
+                            self.state.z = z;
+
+
+                            // eslint-disable-next-line
+                            for (var j = 0; j < x.length; j++) {
+                              // eslint-disable-next-line
+                              for (var i = 0; i < x[j].length; i++) {
+                                var tempName = "";
+                                //var tempColor = "";
+
+                                if (name[i].includes("not_fault")) {
+                                  tempName = "Cluster"
+                                  //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
+                                } else {
+                                  tempName = "Fault"
+                                  //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
+                                }
+
+                                if (idtoLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
+                                  var trace = {
+                                    x: x[j][i], y: y[j][i], z: z[j][i],
+                                    mode: 'markers',
+                                    //legendgroup: 'Level ' + idtoLvl[i],
+                                    marker: {
+                                      size: self.state.size,
+                                      symbol: 'circle',
+                                      //color: tempColor,
+                                      color: '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6),
+                                      line: {
+                                        color: 'rgb(217, 217, 217)',
+                                        width: 0.5
+                                      },
+                                      opacity: self.state.opacity
+                                    },
+                                    type: 'scatter3d',
+                                    id: idtoLvl[i],
+                                    pointIds: pointId[j][i],
+                                    name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
+                                  };
+
+                                  if (self.state.traces[j] === undefined) {
+                                    self.state.traces[j] = [];
                                   }
 
-                                  // var xTemp = undefined;
-                                  // var yTemp = undefined;
-                                  // var zTemp = undefined;
-                                  //
-                                  // if (x[i-1][j] !== undefined) {
-                                  //   xTemp = [];
-                                  //   yTemp = [];
-                                  //   zTemp = [];
-                                  //
-                                  //   for (var k = 0; k < x[i-1][j].length; k++) {
-                                  //     xTemp[k] = Math.round((x[i-1][j][k])/100);
-                                  //     yTemp[k] = Math.round((y[i-1][j][k])/100);
-                                  //     zTemp[k] = Math.round(z[i-1][j][k]);
-                                  //   }
-                                  // }
-
-                                  x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
-                                  y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
-                                  z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+                                  //self.state.traces[j][i] = trace;
+                                  self.state.traces[j].push(trace);
                                 }
-                              } else {
-                                x[1] = x[0];
-                                y[1] = y[0];
-                                z[1] = z[0];
                               }
                             }
-                          }
 
-                          // for (var i = 0; i < z[0].length; i++) {
-                          //   console.log(x[0][0][i]);
-                          //   console.log(y[0][0][i]);
-                          //   console.log(self.state.testCluster[x[0][0][i]][y[0][0][i]]);
-                          //   self.state.testCluster[x[0][0][i]][y[0][0][i]] = z[0][0][i]
-                          // }
+                            console.timeEnd("Plot Traces");
+                            console.groupEnd();
+                            //console.time("Generated Plot");
+                            //alert("Created Plot Traces");
 
-                          //console.log(x[2]);
-                          // self.state.loadingMessage = "Creating Plot Traces...";
-                          // self.setState({loadingMessage: self.state.loadingMessage});
-
-                          console.log("Creating Plot Traces...");
-                          //alert("Generated All Plot Views");
-
-                          self.state.x = x;
-                          self.state.y = y;
-                          self.state.z = z;
-
-                          // eslint-disable-next-line
-                          for (var j = 0; j < x.length; j++) {
-                            // eslint-disable-next-line
-                            for (var i = 0; i < x[j].length; i++) {
-                              var tempName = "";
-                              //var tempColor = "";
-
-                              if (name[i].includes("not_fault")) {
-                                tempName = "Cluster"
-                                //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
-                              } else {
-                                tempName = "Fault"
-                                //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
-                              }
-
-                              if (idtoLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
-                                var trace = {
-                                  x: x[j][i], y: y[j][i], z: z[j][i],
-                                  mode: 'markers',
-                                  //legendgroup: 'Level ' + idtoLvl[i],
-                                  marker: {
-                                    size: self.state.size,
-                                    symbol: 'circle',
-                                    //color: tempColor,
-                                    color: '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6),
-                                    line: {
-                                      color: 'rgb(217, 217, 217)',
-                                      width: 0.5
-                                    },
-                                    opacity: self.state.opacity
-                                  },
-                                  type: 'scatter3d',
-                                  id: idtoLvl[i],
-                                  name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
-                                };
-
-                                if (self.state.traces[j] === undefined) {
-                                  self.state.traces[j] = [];
-                                }
-
-                                //self.state.traces[j][i] = trace;
-                                self.state.traces[j].push(trace);
-                              }
-                            }
-                          }
-
-                          //self.state.loadingMessage = "Generating Plot...";
-                          console.log("Generating Plot...");
-                          //alert("Created Plot Traces");
-
-                          //console.log(self.state.traces);
-                          self.setState({traces: self.state.traces});
+                            //console.log(self.state.traces);
+                            self.setState({traces: self.state.traces});
+                          });
                         });
-
-                        // NOTE: The below is the old Plotly.d3.csv method of reading a csv file
-                        // Plotly.d3.csv(folder + 'clustering3d.csv', function(err, rows){
-                        //   function unpack(rows, key) {
-                        //   	return rows.map(function(row) {
-                        //       return row[key];
-                        //     });
-                        //   }
-                        //
-                        //   // self.state.loadingMessage = "Getting Merging Data...";
-                        //   // self.setState({loadingMessage: self.state.loadingMessage});
-                        //
-                        //   console.log("Getting Merging Data...")
-                        //   //self.forceUpdate();
-                        //
-                        //   var merging3dText = merging3d.responseText.split('\n');
-                        //
-                        //   for (var i = 1; i < merging3dText.length; i++) {
-                        //     var line = merging3dText[i].split(';');
-                        //
-                        //     self.state.childToParent[line[0]] = line[1];
-                        //   }
-                        //
-                        //   self.state.loadingMessage = "Getting Relationship Between ID and Level...";
-                        //   self.setState({loadingMessage: self.state.loadingMessage});
-                        //
-                        //   console.log("Getting Relationship Between ID and Level...");
-                        //   //alert("Got Merging Data");
-                        //
-                        //   //var id = [];
-                        //   var lvl = [[]]; // Holds ID and corresponding levels
-                        //   var mergeLvl = []; // Holds merge level
-                        //   var name = []; // Holds name of each cluster
-                        //
-                        //   var idtoLvl = [[]]; // Holds conversion from id to level
-                        //
-                        //   var clusters3dText = clusters3d.responseText.split('\n');
-                        //
-                        //   // eslint-disable-next-line
-                        //   for (var i = 1; i < clusters3dText.length-1; i++) {
-                        //     var curr = clusters3dText[i].split(';')
-                        //     if (lvl[curr[1]] === undefined) {
-                        //       lvl[curr[1]] = [];
-                        //     }
-                        //     if (idtoLvl[curr[0]] === undefined) {
-                        //       idtoLvl[curr[0]] = [];
-                        //     }
-                        //
-                        //     lvl[curr[1]].push(curr[0]);
-                        //     mergeLvl.push(curr[2]);
-                        //     name.push(curr[3]);
-                        //
-                        //     idtoLvl[curr[0]].push(curr[1]);
-                        //   }
-                        //
-                        //   // self.state.loadingMessage = "Getting Initial Plot View...";
-                        //   // self.setState({loadingMessage: self.state.loadingMessage});
-                        //
-                        //   console.log("Getting Initial Plot View...");
-                        //   //alert("Got ID to Level");
-                        //
-                        //   self.state.leveltoId = lvl;
-                        //   //self.setState({leveltoId: self.state.leveltoId});
-                        //
-                        //   self.state.idtoLevel = idtoLvl;
-                        //   //self.setState({idtoLevel: self.state.idtoLevel});
-                        //
-                        //   // eslint-disable-next-line
-                        //   for (var i = 0; i < self.state.leveltoId.length; i++) {
-                        //    self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
-                        //   }
-                        //
-                        //   //self.setState({opacity: self.state.opacity});
-                        //
-                        //   var x = [[[]]];
-                        //   var y = [[[]]];
-                        //   var z = [[[]]];
-                        //
-                        //   var xValues = unpack(rows, 'x');
-                        //   var yValues = unpack(rows, 'y');
-                        //   var zValues = unpack(rows, 'z');
-                        //   var idValues = unpack(rows, 'id');
-                        //
-                        //   // eslint-disable-next-line
-                        //   for (var i = 0; i < idValues.length; i++) {
-                        //     if (x[0][idValues[i]] === undefined) {
-                        //       x[0][idValues[i]] = [];
-                        //       y[0][idValues[i]] = [];
-                        //       z[0][idValues[i]] = [];
-                        //     }
-                        //
-                        //     x[0][idValues[i]].push(xValues[i]);
-                        //     y[0][idValues[i]].push(yValues[i]);
-                        //     z[0][idValues[i]].push(zValues[i]);
-                        //   }
-                        //
-                        //   // self.state.loadingMessage = "Getting All Plot Views...";
-                        //   // self.setState({loadingMessage: self.state.loadingMessage});
-                        //
-                        //   console.log("Getting All Plot Views...");
-                        //   //alert("Got Initial Plot View");
-                        //
-                        //   //eslint-disable-next-line
-                        //   for (var i = 1; i < lvl.length; i++) {
-                        //     for (var j = x[i-1].length-1; j >= 0; j--) {
-                        //
-                        //       if (x[i] === undefined) {
-                        //         x[i] = [[]];
-                        //         y[i] = [[]];
-                        //         z[i] = [[]];
-                        //       }
-                        //
-                        //       if (i !== 1) {
-                        //         if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
-                        //           if (x[i][self.state.childToParent[j]] === undefined) {
-                        //             x[i][self.state.childToParent[j]] = [];
-                        //             y[i][self.state.childToParent[j]] = [];
-                        //             z[i][self.state.childToParent[j]] = [];
-                        //           }
-                        //           x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
-                        //           y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
-                        //           z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
-                        //         }
-                        //       } else {
-                        //         x[1] = x[0];
-                        //         y[1] = y[0];
-                        //         z[1] = z[0];
-                        //       }
-                        //     }
-                        //   }
-                        //
-                        //   //console.log(x[2]);
-                        //   // self.state.loadingMessage = "Creating Plot Traces...";
-                        //   // self.setState({loadingMessage: self.state.loadingMessage});
-                        //
-                        //   console.log("Creating Plot Traces...");
-                        //   //alert("Generated All Plot Views");
-                        //
-                        //   self.state.x = x;
-                        //   self.state.y = y;
-                        //   self.state.z = z;
-                        //
-                        //   // eslint-disable-next-line
-                        //   for (var j = 0; j < x.length; j++) {
-                        //     // eslint-disable-next-line
-                        //     for (var i = 0; i < x[j].length; i++) {
-                        //       var tempName = "";
-                        //       var tempShape = "";
-                        //       var tempColor = "";
-                        //
-                        //
-                        //       if (name[i].includes("not_fault")) {
-                        //         tempName = "Cluster"
-                        //         tempShape = "circle"
-                        //         tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
-                        //       } else {
-                        //         tempName = "Fault"
-                        //         tempShape = "square"
-                        //         tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
-                        //       }
-                        //
-                        //       if (idtoLvl[i] >= j && x[j][i] !== undefined) {
-                        //         var trace = {
-                        //           x: x[j][i], y: y[j][i], z: z[j][i],
-                        //           mode: 'markers',
-                        //           //legendgroup: 'Level ' + idtoLvl[i],
-                        //           marker: {
-                        //             size: self.state.size,
-                        //             symbol: tempShape,
-                        //             color: tempColor,
-                        //             line: {
-                        //               color: 'rgb(217, 217, 217)',
-                        //               width: 0.5
-                        //             },
-                        //             opacity: self.state.opacity
-                        //           },
-                        //           type: 'scatter3d',
-                        //           id: idtoLvl[i],
-                        //           name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
-                        //         };
-                        //
-                        //         if (self.state.traces[j] === undefined) {
-                        //           self.state.traces[j] = [];
-                        //         }
-                        //
-                        //         //self.state.traces[j][i] = trace;
-                        //         self.state.traces[j].push(trace);
-                        //       }
-                        //     }
-                        //   }
-                        //
-                        //   //self.state.loadingMessage = "Generating Plot...";
-                        //   console.log("Generating Plot...");
-                        //   //alert("Created Plot Traces");
-                        //
-                        //   //console.log(self.state.traces);
-                        //   self.setState({traces: self.state.traces});
-                        // });
                       }
                   }
               }
@@ -484,6 +279,15 @@ class App extends React.Component {
     this.loadPlot();
     window.addEventListener('resize', this.updateWindowDimensions);
   }
+
+  // componentDidUpdate() {
+  //   if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) {
+  //     setTimeout(function () {
+  //       console.timeEnd("Generated Plot");
+  //       console.groupEnd();
+  //     });
+  //   }
+  // }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
@@ -749,138 +553,105 @@ class App extends React.Component {
 
     var currCluster = self.state.traces[self.state.level][index];
 
-    function includesId(idsInCluster, temp) {
-      for (var i = 0; i < idsInCluster.length; i++) {
-        if (idsInCluster[i].id === Number(temp)) {
-          //console.log("true");
-          return true;
-        }
+    // function includesId(idsInCluster, temp) {
+    //   for (var i = 0; i < idsInCluster.length; i++) {
+    //     if (idsInCluster[i] === Number(temp)) {
+    //       //console.log("true");
+    //       return true;
+    //     }
+    //   }
+    //   return false;
+    // }
+
+    // console.log(currCluster.pointIds);
+    console.group("Surface Over " + currCluster.name);
+    console.time("Adjacency List");
+    //console.log("Getting Adjacency List...");
+
+    d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+      var adjacencyList = [[]];
+      var pointId = currCluster.pointIds;
+      //console.log(adjacencyData);
+
+      for (var i = 0; i < adjacencyData.length; i++) {
+        adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+        adjacencyList[adjacencyData[i].id].pop();
       }
-      return false;
-    }
 
-    d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
-      var uniqueIdCoordinates = [];
+      //console.log(adjacencyList);
 
-
-      //console.log(uniqueIdCoordinateData);
-
-      for (var i = 0; i < uniqueIdCoordinateData.length; i++) {
-        var coordinate = {
-          id: Number(uniqueIdCoordinateData[i].id),
-          tuple: [Number(uniqueIdCoordinateData[i].x), Number(uniqueIdCoordinateData[i].y), Number(uniqueIdCoordinateData[i].z)],
-        }
-
-        uniqueIdCoordinates[uniqueIdCoordinateData[i].id] = coordinate;
+      console.timeEnd("Adjacency List");
+      console.time("Previous to New ID Conversion Table");
+      //console.log("Getting Previous to New ID Conversion Table");
+      var prevToNewId = [];
+      // eslint-disable-next-line
+      for (var i = 0; i < pointId.length; i++) {
+        prevToNewId[pointId[i]] = i;
       }
 
+      console.timeEnd("Previous to New ID Conversion Table");
+      console.time("Triangle Counting");
+      //console.log("Getting Connections Between Points...");
 
-      // console.log(uniqueIdCoordinates);
-      //console.log(uniqueIdCoordinates.find(findId));
+      var connections = [[]];
+      var connectionsT = [[]];
+      connectionsT[0] = [];
+      connectionsT[1] = [];
+      connectionsT[2] = [];
 
-
-      d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
-        var adjacencyList = [[]];
-
-        //console.log(adjacencyData);
-
-        for (var i = 0; i < adjacencyData.length; i++) {
-          adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
-          adjacencyList[adjacencyData[i].id].pop();
+      // eslint-disable-next-line
+      for (var i = 0; i < pointId.length; i++) {
+        var currId = pointId[i];
+        if (adjacencyList[currId] === undefined) {
+          console.log(currId);
+          console.log(adjacencyList);
         }
 
-        //console.log(adjacencyList);
-
-        var connections = [[]];
-
-        // for (var i = 2; i < 3; i++) {
-        //   console.log(adjacencyList[i]);
-        //   for (var j = 0; j < adjacencyList[i].length; j++) {
-        //     //console.log(adjacencyList[adjacencyList[i][j]]);
-        //     for (var k = 0; k < adjacencyList[adjacencyList[i][j]].length; k++) {
-        //       //console.log(adjacencyList[adjacencyList[i][j]]);
-        //       if (adjacencyList[i].includes(adjacencyList[adjacencyList[i][j]][k])) {
-        //         if (i !== adjacencyList[i][j] && i !== adjacencyList[adjacencyList[i][j]][k] && adjacencyList[i][j] !== adjacencyList[adjacencyList[i][j]][k]) {
-        //           console.log(i + ", " + adjacencyList[i][j] + ", " + adjacencyList[adjacencyList[i][j]][k])
-        //           connections.push([i, adjacencyList[i][j], adjacencyList[adjacencyList[i][j]][k]]);
-        //         }
-        //       }
-        //     }
-        //   }
-        // }
-
-        console.log("Converting Coordinates to IDs...");
-        //console.log(currCluster);
-        var idsInCluster = [];
-        // eslint-disable-next-line
-        for (var i = 0; i < currCluster.x.length; i++) {
-          //console.log(uniqueIdCoordinates[i].tuple[0] + ", " + Number(currCluster.x[i]));
-          // eslint-disable-next-line
-          function findId(coord) {
-            //console.log(coord.tuple[0] + ", " + Number(currCluster.x[i]));
-            var xDiff = Math.abs(coord.tuple[0] - Number(currCluster.x[i]));
-            var yDiff = Math.abs(coord.tuple[1] - Number(currCluster.y[i]));
-            var zDiff = Math.abs(coord.tuple[2] - Number(currCluster.z[i]));
-
-            if(xDiff < 0.0001 && yDiff < 0.0001 && zDiff < 0.0001) {
-                return true;
-            }
-
-            // if (coord.tuple[0] === Number(currCluster.x[i]) && coord.tuple[1] === Number(currCluster.y[i]) && coord.tuple[2] === Number(currCluster.z[i])) {
-            //   return true;
-            // }
-
-            return false;
-          }
-
-          var tempId = uniqueIdCoordinates.find(findId);
-
-          if (tempId === undefined) {
-            console.log("ERR: Did not find ID for point at index " + i + ". There is most likely something wrong with public/" + folder + "coordinates.csv or public/" + folder + "clustering3d.csv");
-          } else {
-            idsInCluster.push(tempId);
-          }
-        }
-
-        // console.log(idsInCluster);
-
-        var prevToNewId = [];
-        // eslint-disable-next-line
-        for (var i = 0; i < idsInCluster.length; i++) {
-          prevToNewId[idsInCluster[i].id] = i;
-        }
-
-        console.log("Getting Connections Between Points...");
-
-        var connectionsT = [[]];
-        connectionsT[0] = [];
-        connectionsT[1] = [];
-        connectionsT[2] = [];
-
-        // eslint-disable-next-line
-        for (var i = 0; i < idsInCluster.length; i++) {
-          var currId = idsInCluster[i].id;
-
-          for (var j = 0; j < adjacencyList[currId].length-1; j++) {
-            if (adjacencyList[currId][j] > currId && includesId(idsInCluster, adjacencyList[currId][j])) {
-              for (var k = j+1; k < adjacencyList[currId].length; k++) {
-                if (adjacencyList[currId][k] > adjacencyList[currId][j] && includesId(idsInCluster, adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
-                  //console.log("Hello there");
-                  if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
-                    //console.log(i + ", " + Number(adjacencyList[i][j]) + ", " + Number(adjacencyList[i][k]));
-                    connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
-                    connectionsT[0].push(prevToNewId[currId]);
-                    connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
-                    connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
-                  }
+        for (var j = 0; j < adjacencyList[currId].length-1; j++) {
+          if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
+            for (var k = j+1; k < adjacencyList[currId].length; k++) {
+              if (adjacencyList[currId][k] > adjacencyList[currId][j] && pointId.includes(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
+                  connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                  connectionsT[0].push(prevToNewId[currId]);
+                  connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
+                  connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
                 }
               }
             }
           }
         }
+      }
 
-        connections.shift();
+      connections.shift();
 
+      console.timeEnd("Triangle Counting");
+      console.time("3D Mesh Trace");
+
+      //console.log(idsInCluster);
+      //console.log(connections);
+
+      // for (var i = 0; i < connections.length; i++) {
+      //   for (var j = 0; j < connections[i].length; j++) {
+      //     if (connections[i][j] === 429) {
+      //       console.log("Here: " + i);
+      //     }
+      //   }
+      // }
+
+      // for (var i = 0; i < self.state.traces.length; i++) {
+      //   for (var j = 0; j < self.state.traces[i].length; j++) {
+      //     for (var k = 0; k < self.state.traces[i][j].x.length; k++) {
+      //       if (self.state.traces[i][j].x[k] === "1992.1750" && self.state.traces[i][j].y[k] === "2055.3500" && self.state.traces[i][j].z[k] === "-0.2201") {
+      //         console.log("Found in " + self.state.traces[i][j].name + " on Level " + i + " at index " + k);
+      //       }
+      //     }
+      //   }
+      // }
+
+      //console.log(connections);
+
+      if (connections.length > 0) {
         var trace = {
           type: 'mesh3d',
           x: currCluster.x,
@@ -909,15 +680,24 @@ class App extends React.Component {
         }
 
         self.state.traces[self.state.level].push(trace);
+        //console.log(trace);
 
-        console.log("Plotting Surface from " + currCluster.name + "...");
+        //console.log("Plotting Surface from " + currCluster.name + "...");
         //console.log(self.state.traces);
 
         self.state.toggledSurfaces.push(currCluster.name);
         self.state.toggledSurfaces.sort();
 
-        self.setState({traces: self.state.traces});
-      });
+        console.timeEnd("3D Mesh Trace");
+      } else if (currCluster.name.includes("Fault")) {
+        alert("No connections found. Faults are only connected to lower level points.");
+      } else {
+        alert("No connections found.");
+      }
+
+      console.groupEnd();
+
+      self.setState({traces: self.state.traces});
     });
   }
 
@@ -1078,8 +858,8 @@ class App extends React.Component {
                 <div style={{display: this.state.tabs[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
-                  <button onClick={this.showExactSurface.bind(this)}>Show Exact Surface</button>
-                  <button onClick={this.showApproximateSurface.bind(this)}>Show Approximate Surface</button>
+                  <button onClick={this.showExactSurface.bind(this)}>Show Surface</button>
+                  {/*<button onClick={this.showApproximateSurface.bind(this)}>Show Approximate Surface</button>*/}
                   <br/>
                   <br/>
                   Click Surface to Remove:

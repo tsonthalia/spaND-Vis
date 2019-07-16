@@ -53,7 +53,7 @@ Add the new data into the new folder. Remember, the following 4 files should be 
 
 After this is complete, open up _**src/App.js**_ and look for the variable _**folder**_.
 
-Change the value of _**folder**_ to`data/<new_folder_name>`( e.g.`var folder = data/newFolder`).
+Change the value of _**folder**_ to`data/<new_folder_name>`( e.g.`folder: data/newFolder`).
 
 Run the program, and the new data will be used!
 

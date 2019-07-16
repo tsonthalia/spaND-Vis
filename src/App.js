@@ -9,6 +9,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
+      folder: "data/A.70.5/", //change this line to change the set of data being used
       width: 0,
       height: 0,
       traces: [[]], //e.g. traces[level][id] will return the trace at that level and with that id
@@ -36,7 +37,7 @@ class App extends React.Component {
   loadPlot() {
     let self = this;
 
-    var folder = "data/A.70.5/" //change this line to change the set of data being used
+    var folder = this.state.folder;
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -736,7 +737,7 @@ class App extends React.Component {
   }
 
   showExactSurface(event) {
-    var folder = "data/A.70.5/"
+    var folder = this.state.folder;
     var index = null;
     let self = this;
 

@@ -1,8 +1,8 @@
+// Visualization Model created by Tanay Sonthalia
+
 import React from 'react';
 import Plot from 'react-plotly.js';
-//import Plotly from '../node_modules/plotly.js/lib/core.js';
 import * as d3 from 'd3';
-import * as triangulate from 'delaunay-triangulate';
 
 class App extends React.Component {
   constructor(props) {
@@ -10,32 +10,31 @@ class App extends React.Component {
 
     this.state = {
       folder: "data/A.70.5/", //change this line to change the set of data being used
-      width: 0,
-      height: 0,
+      width: 0, //width of the updateWindowDimensions
+      height: 0, //height of the window
       traces: [[]], //e.g. traces[level][id] will return the trace at that level and with that id
-      size: 5,
+      size: 5, //size of the points on the scatterplot
       opacity: [], //e.g. opacity[level] will return opacity of that level
-      level: 0,
+      level: 0, //current slider level
       leveltoId: [[]], //e.g. leveltoId[level] will return an array of ids at that level
       idtoLevel: [], //e.g. idtoLevel[id] will return the level with that id
       childToParent: [], //e.g. childToParent[child] will return that child cluster's corresponding parent cluster
       x: [[[]]], //e.g. x[level][id] will return an array of x values at that level on the slider with that id
       y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
       z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
-      //loadingMessage: "",
-      levelTextColor: [],
-      hiddenPlots: [],
-      currCluster: 0,
-      tabs: ["block", "block", "none"],
-      toggledSurfaces: [],
+      levelTextColor: [], //color of each level in the "Show Levels" section (black = level is currently shown, gray = level is currently hidden)
+      hiddenPlots: [], //which plot is currently being used (which level on the this.state.traces variable)
+      currCluster: 0, //cluster that has been inputted into the textfield to show surfaces
+      tabs: ["block", "block", "none"], //display value for the tabs on the sidebar (e.g. Levels, Surfaces, Advanced Tools)
+      toggledSurfaces: [], //lists which surfaces are being shown on the side under "Click Surface to Remove"
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
     this.loadPlot = this.loadPlot.bind(this);
   }
 
-  loadPlot() {
-    let self = this;
+  loadPlot() { //loads all of the information that the plot needs
+    let self = this; //'this' is undefined in an XMLHttpRequest, so another variable must hold the value so that 'this' can be used
 
     var folder = this.state.folder;
     var merging3d = new XMLHttpRequest();
@@ -69,41 +68,35 @@ class App extends React.Component {
                             for (var i = 1; i < merging3dText.length; i++) {
                               var line = merging3dText[i].split(';');
 
-                              self.state.childToParent[line[0]] = line[1];
+                              self.state.childToParent[line[0]] = line[1]; //gets child cluster to parent cluster values from merging3d.txt file
                             }
-
-                            self.state.loadingMessage = "Getting Relationship Between ID and Level...";
-                            self.setState({loadingMessage: self.state.loadingMessage});
 
                             console.timeEnd("Merging Data");
                             console.time("ID to Level Conversion Table");
-                            //console.log("Getting Relationship Between ID and Level...");
-                            //alert("Got Merging Data");
 
-                            //var id = [];
-                            var lvl = [[]]; // Holds ID and corresponding levels
-                            var mergeLvl = []; // Holds merge level
+                            var lvlToId = [[]]; // Holds ID and corresponding levels
+                            var mergeLvl = []; // Holds merge level (currently not being used but stored in case needed in future)
                             var name = []; // Holds name of each cluster
 
-                            var idtoLvl = [[]]; // Holds conversion from id to level
+                            var idToLvl = [[]]; // Holds conversion from id to level
 
                             var clusters3dText = clusters3d.responseText.split('\n');
 
                             // eslint-disable-next-line
                             for (var i = 1; i < clusters3dText.length-1; i++) {
                               var curr = clusters3dText[i].split(';')
-                              if (lvl[curr[1]] === undefined) {
-                                lvl[curr[1]] = [];
+                              if (lvlToId[curr[1]] === undefined) {
+                                lvlToId[curr[1]] = [];
                               }
-                              if (idtoLvl[curr[0]] === undefined) {
-                                idtoLvl[curr[0]] = [];
+                              if (idToLvl[curr[0]] === undefined) {
+                                idToLvl[curr[0]] = [];
                               }
 
-                              lvl[curr[1]].push(curr[0]);
+                              lvlToId[curr[1]].push(curr[0]); //adds id at index of lvl
                               mergeLvl.push(curr[2]);
                               name.push(curr[3]);
 
-                              idtoLvl[curr[0]].push(curr[1]);
+                              idToLvl[curr[0]].push(curr[1]);
                             }
 
                             // self.state.loadingMessage = "Getting Initial Plot View...";
@@ -113,10 +106,10 @@ class App extends React.Component {
                             console.time("Initial Plot View");
                             //alert("Got ID to Level");
 
-                            self.state.leveltoId = lvl;
+                            self.state.leveltoId = lvlToId;
                             //self.setState({leveltoId: self.state.leveltoId});
 
-                            self.state.idtoLevel = idtoLvl;
+                            self.state.idtoLevel = idToLvl;
                             //self.setState({idtoLevel: self.state.idtoLevel});
 
                             // eslint-disable-next-line
@@ -163,7 +156,7 @@ class App extends React.Component {
                             //alert("Got Initial Plot View");
 
                             //eslint-disable-next-line
-                            for (var i = 1; i < lvl.length; i++) {
+                            for (var i = 1; i < lvlToId.length; i++) {
                               for (var j = x[i-1].length-1; j >= 0; j--) {
 
                                 if (x[i] === undefined) {
@@ -222,11 +215,11 @@ class App extends React.Component {
                                   //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                                 }
 
-                                if (idtoLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
+                                if (idToLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
                                   var trace = {
                                     x: x[j][i], y: y[j][i], z: z[j][i],
                                     mode: 'markers',
-                                    //legendgroup: 'Level ' + idtoLvl[i],
+                                    //legendgroup: 'Level ' + idToLvl[i],
                                     marker: {
                                       size: self.state.size,
                                       symbol: 'circle',
@@ -239,9 +232,9 @@ class App extends React.Component {
                                       opacity: self.state.opacity
                                     },
                                     type: 'scatter3d',
-                                    id: idtoLvl[i],
+                                    id: idToLvl[i],
                                     pointIds: pointId[j][i],
-                                    name: tempName + ' ' + i + ' (Level ' + idtoLvl[i] + ')'
+                                    name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')'
                                   };
 
                                   if (self.state.traces[j] === undefined) {
@@ -395,153 +388,154 @@ class App extends React.Component {
     }
   }
 
-  showApproximateSurface(event) {
-    var alreadyPresent = false;
-    var index = null;
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
-        index = i;
-      }
-    }
-
-    if (index != null) {
-      // eslint-disable-next-line
-      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-        if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name + ' highlight') {
-          this.state.traces[this.state.level].splice(i, 1);
-          i--;
-          alreadyPresent = true;
-        } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name) {
-          // eslint-disable-next-line
-          this.state.traces[this.state.level][i].mode = 'markers';
-          i--;
-          alreadyPresent = true;
-        }
-      }
-
-      if (alreadyPresent) {
-        this.state.toggledSurfaces.splice(this.state.toggledSurfaces.indexOf(this.state.traces[this.state.level][index].name), 1); // removes the surface from the list of surfaces shown
-      }
-
-      else { // show the surface
-        var x = this.state.traces[this.state.level][index].x;
-        var y = this.state.traces[this.state.level][index].y;
-        var z = this.state.traces[this.state.level][index].z;
-        var colorTemp = this.state.traces[this.state.level][index].marker.color;
-
-        var points = [[]];
-
-        // eslint-disable-next-line
-        for (var i = 0; i < x.length; i++) {
-          points[i] = [];
-
-          points[i].push(x[i]);
-          points[i].push(y[i]);
-          points[i].push(z[i]);
-        }
-
-        // console.log(points);
-        //
-        // for (var i = 0; i < points.length-1; i++) {
-        //   for (var j = i+1; j < points.length; j++) {
-        //     if (points[i][0] === points[j][0] && points[i][1] === points[j][1] && points[i][2] === points[j][2]) {
-        //       points.splice(j, 1);
-        //       j--;
-        //       console.log(j);
-        //     }
-        //   }
-        // }
-
-        var triangles = triangulate(points); // triangulate() is imported from a different library
-
-        if (triangles.length === 0) {
-          console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with Lines...");
-          // eslint-disable-next-line
-          this.state.traces[this.state.level][index].mode = 'lines+markers';
-        }
-
-        else {
-          console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
-          //console.log(this.state.traces[0][0].x);
-
-          // eslint-disable-next-line
-          for (var i = 0; i < triangles.length; i++) {
-            var xTemp = [];
-            var yTemp = [];
-            var zTemp = [];
-
-            for (var j = 0; j < triangles[i].length; j++) {
-              xTemp.push(x[triangles[i][j]]);
-              yTemp.push(y[triangles[i][j]]);
-              zTemp.push(z[triangles[i][j]]);
-            }
-
-            var trace = {
-              type: 'mesh3d',
-              x: xTemp,
-              y: yTemp,
-              z: zTemp,
-              i: [0, 0, 0, 1],
-              j: [1, 2, 3, 2],
-              k: [2, 3, 1, 3],
-              // i: [0],
-              // j: [1],
-              // k: [2],
-              facecolor: [
-                colorTemp,
-                colorTemp,
-                colorTemp,
-                colorTemp
-              ],
-              marker: {
-                opacity: 1,
-              },
-              id: this.state.traces[this.state.level][index].id,
-              name: this.state.traces[this.state.level][index].name + ' highlight',
-
-              flatshading: true,
-            }
-
-            this.state.traces[this.state.level].push(trace);
-          }
-        }
-
-        this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
-        this.state.toggledSurfaces.sort();
-
-        // this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
-        //
-        // var newSurface = {
-        //   x: this.state.traces[this.state.level][index].x,
-        //   y: this.state.traces[this.state.level][index].y,
-        //   z: this.state.traces[this.state.level][index].z,
-        //   mode: 'markers',
-        //   //legendgroup: 'Level ' + idtoLvl[i],
-        //   marker: {
-        //     size: 30,
-        //     symbol: 'circle',
-        //     color: this.state.traces[this.state.level][index].marker.color,
-        //     line: {
-        //       color: 'rgb(217, 217, 217)',
-        //       width: 0.5
-        //     },
-        //     opacity: 0.1
-        //   },
-        //   id: this.state.traces[this.state.level][index].id,
-        //   name: this.state.traces[this.state.level][index].name + ' highlight',
-        //   type: 'scatter3d',
-        //   showlegend: false,
-        //   hoverinfo: 'skip',
-        // }
-        // this.state.traces[this.state.level].push(newSurface);
-      }
-
-      this.setState({traces: this.state.traces});
-    }
-  }
+  // showApproximateSurface(event) {
+  //   var alreadyPresent = false;
+  //   var index = null;
+  //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+  //     if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
+  //       index = i;
+  //     }
+  //   }
+  //
+  //   if (index != null) {
+  //     // eslint-disable-next-line
+  //     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+  //       if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name + ' highlight') {
+  //         this.state.traces[this.state.level].splice(i, 1);
+  //         i--;
+  //         alreadyPresent = true;
+  //       } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name) {
+  //         // eslint-disable-next-line
+  //         this.state.traces[this.state.level][i].mode = 'markers';
+  //         i--;
+  //         alreadyPresent = true;
+  //       }
+  //     }
+  //
+  //     if (alreadyPresent) {
+  //       this.state.toggledSurfaces.splice(this.state.toggledSurfaces.indexOf(this.state.traces[this.state.level][index].name), 1); // removes the surface from the list of surfaces shown
+  //     }
+  //
+  //     else { // show the surface
+  //       var x = this.state.traces[this.state.level][index].x;
+  //       var y = this.state.traces[this.state.level][index].y;
+  //       var z = this.state.traces[this.state.level][index].z;
+  //       var colorTemp = this.state.traces[this.state.level][index].marker.color;
+  //
+  //       var points = [[]];
+  //
+  //       // eslint-disable-next-line
+  //       for (var i = 0; i < x.length; i++) {
+  //         points[i] = [];
+  //
+  //         points[i].push(x[i]);
+  //         points[i].push(y[i]);
+  //         points[i].push(z[i]);
+  //       }
+  //
+  //       // console.log(points);
+  //       //
+  //       // for (var i = 0; i < points.length-1; i++) {
+  //       //   for (var j = i+1; j < points.length; j++) {
+  //       //     if (points[i][0] === points[j][0] && points[i][1] === points[j][1] && points[i][2] === points[j][2]) {
+  //       //       points.splice(j, 1);
+  //       //       j--;
+  //       //       console.log(j);
+  //       //     }
+  //       //   }
+  //       // }
+  //
+  //       var triangles = triangulate(points); // triangulate() is imported from a different library
+  //
+  //       if (triangles.length === 0) {
+  //         console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with Lines...");
+  //         // eslint-disable-next-line
+  //         this.state.traces[this.state.level][index].mode = 'lines+markers';
+  //       }
+  //
+  //       else {
+  //         console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
+  //         //console.log(this.state.traces[0][0].x);
+  //
+  //         // eslint-disable-next-line
+  //         for (var i = 0; i < triangles.length; i++) {
+  //           var xTemp = [];
+  //           var yTemp = [];
+  //           var zTemp = [];
+  //
+  //           for (var j = 0; j < triangles[i].length; j++) {
+  //             xTemp.push(x[triangles[i][j]]);
+  //             yTemp.push(y[triangles[i][j]]);
+  //             zTemp.push(z[triangles[i][j]]);
+  //           }
+  //
+  //           var trace = {
+  //             type: 'mesh3d',
+  //             x: xTemp,
+  //             y: yTemp,
+  //             z: zTemp,
+  //             i: [0, 0, 0, 1],
+  //             j: [1, 2, 3, 2],
+  //             k: [2, 3, 1, 3],
+  //             // i: [0],
+  //             // j: [1],
+  //             // k: [2],
+  //             facecolor: [
+  //               colorTemp,
+  //               colorTemp,
+  //               colorTemp,
+  //               colorTemp
+  //             ],
+  //             marker: {
+  //               opacity: 1,
+  //             },
+  //             id: this.state.traces[this.state.level][index].id,
+  //             name: this.state.traces[this.state.level][index].name + ' highlight',
+  //
+  //             flatshading: true,
+  //           }
+  //
+  //           this.state.traces[this.state.level].push(trace);
+  //         }
+  //       }
+  //
+  //       this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
+  //       this.state.toggledSurfaces.sort();
+  //
+  //       // this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
+  //       //
+  //       // var newSurface = {
+  //       //   x: this.state.traces[this.state.level][index].x,
+  //       //   y: this.state.traces[this.state.level][index].y,
+  //       //   z: this.state.traces[this.state.level][index].z,
+  //       //   mode: 'markers',
+  //       //   //legendgroup: 'Level ' + idToLvl[i],
+  //       //   marker: {
+  //       //     size: 30,
+  //       //     symbol: 'circle',
+  //       //     color: this.state.traces[this.state.level][index].marker.color,
+  //       //     line: {
+  //       //       color: 'rgb(217, 217, 217)',
+  //       //       width: 0.5
+  //       //     },
+  //       //     opacity: 0.1
+  //       //   },
+  //       //   id: this.state.traces[this.state.level][index].id,
+  //       //   name: this.state.traces[this.state.level][index].name + ' highlight',
+  //       //   type: 'scatter3d',
+  //       //   showlegend: false,
+  //       //   hoverinfo: 'skip',
+  //       // }
+  //       // this.state.traces[this.state.level].push(newSurface);
+  //     }
+  //
+  //     this.setState({traces: this.state.traces});
+  //   }
+  // }
 
   showExactSurface(event) {
     var folder = this.state.folder;
+    var alreadyPresent = false;
     var index = null;
     let self = this;
 
@@ -551,154 +545,338 @@ class App extends React.Component {
       }
     }
 
-    var currCluster = self.state.traces[self.state.level][index];
-
-    // function includesId(idsInCluster, temp) {
-    //   for (var i = 0; i < idsInCluster.length; i++) {
-    //     if (idsInCluster[i] === Number(temp)) {
-    //       //console.log("true");
-    //       return true;
-    //     }
-    //   }
-    //   return false;
-    // }
-
-    // console.log(currCluster.pointIds);
-    console.group("Surface Over " + currCluster.name);
-    console.time("Adjacency List");
-    //console.log("Getting Adjacency List...");
-
-    d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
-      var adjacencyList = [[]];
-      var pointId = currCluster.pointIds;
-      //console.log(adjacencyData);
-
-      for (var i = 0; i < adjacencyData.length; i++) {
-        adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
-        adjacencyList[adjacencyData[i].id].pop();
-      }
-
-      //console.log(adjacencyList);
-
-      console.timeEnd("Adjacency List");
-      console.time("Previous to New ID Conversion Table");
-      //console.log("Getting Previous to New ID Conversion Table");
-      var prevToNewId = [];
-      // eslint-disable-next-line
-      for (var i = 0; i < pointId.length; i++) {
-        prevToNewId[pointId[i]] = i;
-      }
-
-      console.timeEnd("Previous to New ID Conversion Table");
-      console.time("Triangle Counting");
-      //console.log("Getting Connections Between Points...");
-
-      var connections = [[]];
-      var connectionsT = [[]];
-      connectionsT[0] = [];
-      connectionsT[1] = [];
-      connectionsT[2] = [];
+    if (index != null) {
+      var currCluster = self.state.traces[self.state.level][index];
 
       // eslint-disable-next-line
-      for (var i = 0; i < pointId.length; i++) {
-        var currId = pointId[i];
-        if (adjacencyList[currId] === undefined) {
-          console.log(currId);
-          console.log(adjacencyList);
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name + ' highlight') {
+          alreadyPresent = true;
         }
+      }
 
-        for (var j = 0; j < adjacencyList[currId].length-1; j++) {
-          if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
-            for (var k = j+1; k < adjacencyList[currId].length; k++) {
-              if (adjacencyList[currId][k] > adjacencyList[currId][j] && pointId.includes(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
-                if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
-                  connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
-                  connectionsT[0].push(prevToNewId[currId]);
-                  connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
-                  connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+      if (!alreadyPresent) {
+        // function includesId(idsInCluster, temp) {
+        //   for (var i = 0; i < idsInCluster.length; i++) {
+        //     if (idsInCluster[i] === Number(temp)) {
+        //       //console.log("true");
+        //       return true;
+        //     }
+        //   }
+        //   return false;
+        // }
+
+        // console.log(currCluster.pointIds);
+
+        console.group("Surface Over " + currCluster.name);
+        console.time("Adjacency List");
+        //console.log("Getting Adjacency List...");
+
+        d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+          var adjacencyList = [[]];
+          var pointId = currCluster.pointIds;
+          //console.log(adjacencyData);
+
+          for (var i = 0; i < adjacencyData.length; i++) {
+            adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+            adjacencyList[adjacencyData[i].id].pop();
+          }
+
+          //console.log(adjacencyList);
+
+          console.timeEnd("Adjacency List");
+          console.time("Previous to New ID Conversion Table");
+          //console.log("Getting Previous to New ID Conversion Table");
+          var prevToNewId = [];
+          // eslint-disable-next-line
+          for (var i = 0; i < pointId.length; i++) {
+            prevToNewId[pointId[i]] = i;
+          }
+
+          console.timeEnd("Previous to New ID Conversion Table");
+          console.time("Triangle Counting");
+          //console.log("Getting Connections Between Points...");
+
+          var connections = [[]];
+          var connectionsT = [[]];
+          connectionsT[0] = [];
+          connectionsT[1] = [];
+          connectionsT[2] = [];
+
+          // eslint-disable-next-line
+          for (var i = 0; i < pointId.length; i++) {
+            var currId = pointId[i];
+            if (adjacencyList[currId] === undefined) {
+              console.log(currId);
+              console.log(adjacencyList);
+            }
+
+            for (var j = 0; j < adjacencyList[currId].length-1; j++) {
+              if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
+                for (var k = j+1; k < adjacencyList[currId].length; k++) {
+                  if (adjacencyList[currId][k] > adjacencyList[currId][j] && pointId.includes(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                    if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
+                      connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                      connectionsT[0].push(prevToNewId[currId]);
+                      connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
+                      connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+                    }
+                  }
                 }
               }
             }
           }
-        }
-      }
 
-      connections.shift();
+          connections.shift();
 
-      console.timeEnd("Triangle Counting");
-      console.time("3D Mesh Trace");
+          console.timeEnd("Triangle Counting");
+          console.time("3D Mesh Trace");
 
-      //console.log(idsInCluster);
-      //console.log(connections);
+          //console.log(idsInCluster);
+          //console.log(connections);
 
-      // for (var i = 0; i < connections.length; i++) {
-      //   for (var j = 0; j < connections[i].length; j++) {
-      //     if (connections[i][j] === 429) {
-      //       console.log("Here: " + i);
-      //     }
-      //   }
-      // }
+          // for (var i = 0; i < connections.length; i++) {
+          //   for (var j = 0; j < connections[i].length; j++) {
+          //     if (connections[i][j] === 429) {
+          //       console.log("Here: " + i);
+          //     }
+          //   }
+          // }
 
-      // for (var i = 0; i < self.state.traces.length; i++) {
-      //   for (var j = 0; j < self.state.traces[i].length; j++) {
-      //     for (var k = 0; k < self.state.traces[i][j].x.length; k++) {
-      //       if (self.state.traces[i][j].x[k] === "1992.1750" && self.state.traces[i][j].y[k] === "2055.3500" && self.state.traces[i][j].z[k] === "-0.2201") {
-      //         console.log("Found in " + self.state.traces[i][j].name + " on Level " + i + " at index " + k);
-      //       }
-      //     }
-      //   }
-      // }
+          // for (var i = 0; i < self.state.traces.length; i++) {
+          //   for (var j = 0; j < self.state.traces[i].length; j++) {
+          //     for (var k = 0; k < self.state.traces[i][j].x.length; k++) {
+          //       if (self.state.traces[i][j].x[k] === "1992.1750" && self.state.traces[i][j].y[k] === "2055.3500" && self.state.traces[i][j].z[k] === "-0.2201") {
+          //         console.log("Found in " + self.state.traces[i][j].name + " on Level " + i + " at index " + k);
+          //       }
+          //     }
+          //   }
+          // }
 
-      //console.log(connections);
+          //console.log(connections);
 
-      if (connections.length > 0) {
-        var trace = {
-          type: 'mesh3d',
-          x: currCluster.x,
-          y: currCluster.y,
-          z: currCluster.z,
-          i: connectionsT[0],
-          j: connectionsT[1],
-          k: connectionsT[2],
-          // i: [0],
-          // j: [1],
-          // k: [2],
-          // facecolor: [
-          //   currCluster.marker.color,
-          //   currCluster.marker.color,
-          //   currCluster.marker.color,
-          //   currCluster.marker.color
-          // ],
-          color: currCluster.marker.color,
-          marker: {
-            opacity: 1,
-          },
-          id: currCluster.id,
-          name: currCluster.name + ' highlight',
+          if (connections.length > 0) {
+            var trace = {
+              type: 'mesh3d',
+              x: currCluster.x,
+              y: currCluster.y,
+              z: currCluster.z,
+              i: connectionsT[0],
+              j: connectionsT[1],
+              k: connectionsT[2],
+              // i: [0],
+              // j: [1],
+              // k: [2],
+              // facecolor: [
+              //   currCluster.marker.color,
+              //   currCluster.marker.color,
+              //   currCluster.marker.color,
+              //   currCluster.marker.color
+              // ],
+              color: currCluster.marker.color,
+              marker: {
+                opacity: 1,
+              },
+              id: currCluster.id,
+              name: currCluster.name + ' highlight',
 
-          flatshading: true,
-        }
+              flatshading: true,
+            }
 
-        self.state.traces[self.state.level].push(trace);
-        //console.log(trace);
+            self.state.traces[self.state.level].push(trace);
+            //console.log(trace);
 
-        //console.log("Plotting Surface from " + currCluster.name + "...");
-        //console.log(self.state.traces);
+            //console.log("Plotting Surface from " + currCluster.name + "...");
+            //console.log(self.state.traces);
 
-        self.state.toggledSurfaces.push(currCluster.name);
-        self.state.toggledSurfaces.sort();
+            self.state.toggledSurfaces.push(currCluster.name);
+            self.state.toggledSurfaces.sort();
 
-        console.timeEnd("3D Mesh Trace");
-      } else if (currCluster.name.includes("Fault")) {
-        alert("No connections found. Faults are only connected to lower level points.");
+            console.timeEnd("3D Mesh Trace");
+          } else if (currCluster.name.includes("Fault")) {
+            alert("No connections found. Faults are only connected to lower level points.");
+          } else {
+            alert("No connections found.");
+          }
+
+          console.groupEnd();
+
+          self.setState({traces: self.state.traces});
+        });
       } else {
-        alert("No connections found.");
+        console.log("Surface Over " + currCluster.name + " Already Exists", "color: #FF0000")
+      }
+    }
+  }
+
+  showSurface(event) {
+    var folder = this.state.folder;
+    var alreadyPresent = false;
+    var index = null;
+    let self = this;
+
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if (this.state.traces[this.state.level][i].name === event.points[0].data.name) {
+        index = i;
+      }
+    }
+
+    if (index != null) {
+      var currCluster = self.state.traces[self.state.level][index];
+
+      // eslint-disable-next-line
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name && this.state.traces[this.state.level][i].name.includes('highlight')) {
+          this.state.traces[this.state.level].splice(i, 1);
+          alreadyPresent = true;
+        }
       }
 
-      console.groupEnd();
+      if (!alreadyPresent && this.state.toggledSurfaces.includes(this.state.traces[this.state.level][index].name)) {
+        alreadyPresent = true;
+      }
 
-      self.setState({traces: self.state.traces});
-    });
+      if (!alreadyPresent) {
+
+        // function includesId(idsInCluster, temp) {
+        //   for (var i = 0; i < idsInCluster.length; i++) {
+        //     if (idsInCluster[i] === Number(temp)) {
+        //       //console.log("true");
+        //       return true;
+        //     }
+        //   }
+        //   return false;
+        // }
+
+        // console.log(currCluster.pointIds);
+
+        console.group("Surface Over " + currCluster.name);
+        console.time("Adjacency List");
+        //console.log("Getting Adjacency List...");
+
+        d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+          var adjacencyList = [[]];
+          var pointId = currCluster.pointIds;
+          //console.log(adjacencyData);
+
+          for (var i = 0; i < adjacencyData.length; i++) {
+            adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+            adjacencyList[adjacencyData[i].id].pop();
+          }
+
+          //console.log(adjacencyList);
+
+          console.timeEnd("Adjacency List");
+          console.time("Previous to New ID Conversion Table");
+          //console.log("Getting Previous to New ID Conversion Table");
+          var prevToNewId = [];
+          // eslint-disable-next-line
+          for (var i = 0; i < pointId.length; i++) {
+            prevToNewId[pointId[i]] = i;
+          }
+
+          console.timeEnd("Previous to New ID Conversion Table");
+          console.time("Triangle Counting");
+          //console.log("Getting Connections Between Points...");
+
+          var connections = [[]];
+          var connectionsT = [[]];
+          connectionsT[0] = [];
+          connectionsT[1] = [];
+          connectionsT[2] = [];
+
+          // eslint-disable-next-line
+          for (var i = 0; i < pointId.length; i++) {
+            var currId = pointId[i];
+            if (adjacencyList[currId] === undefined) {
+              console.log(currId);
+              console.log(adjacencyList);
+            }
+
+            for (var j = 0; j < adjacencyList[currId].length-1; j++) {
+              if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
+                for (var k = j+1; k < adjacencyList[currId].length; k++) {
+                  if (adjacencyList[currId][k] > adjacencyList[currId][j] && pointId.includes(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
+                    if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
+                      connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                      connectionsT[0].push(prevToNewId[currId]);
+                      connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
+                      connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+                    }
+                  }
+                }
+              }
+            }
+          }
+
+          connections.shift();
+
+          console.timeEnd("Triangle Counting");
+          console.time("3D Mesh Trace");
+
+          if (connections.length > 0) {
+            var trace = {
+              type: 'mesh3d',
+              x: currCluster.x,
+              y: currCluster.y,
+              z: currCluster.z,
+              i: connectionsT[0],
+              j: connectionsT[1],
+              k: connectionsT[2],
+              // i: [0],
+              // j: [1],
+              // k: [2],
+              // facecolor: [
+              //   currCluster.marker.color,
+              //   currCluster.marker.color,
+              //   currCluster.marker.color,
+              //   currCluster.marker.color
+              // ],
+              color: currCluster.marker.color,
+              marker: {
+                opacity: 1,
+              },
+              id: currCluster.id,
+              name: currCluster.name + ' highlight',
+
+              flatshading: true,
+            }
+
+            self.state.traces[self.state.level].push(trace);
+            //console.log(trace);
+
+            //console.log("Plotting Surface from " + currCluster.name + "...");
+            //console.log(self.state.traces);
+
+            self.state.toggledSurfaces.push(currCluster.name);
+            self.state.toggledSurfaces.sort();
+
+            console.timeEnd("3D Mesh Trace");
+          } else if (currCluster.name.includes("Fault")) {
+            alert("No connections found. Faults are only connected to lower level points.");
+          } else {
+            alert("No connections found.");
+          }
+
+          console.groupEnd();
+          self.setState({traces: self.state.traces});
+        });
+      } else {
+        var name = event.points[0].data.name;
+        var lastIndex = name.lastIndexOf(" ")
+        console.time("Removing Surface over " + name.substring(0, lastIndex));
+
+        // eslint-disable-next-line
+        for (var i = 0; i < self.state.toggledSurfaces.length; i++) {
+          if (self.state.toggledSurfaces[i] + ' highlight' === currCluster.name) {
+            this.state.toggledSurfaces.splice(i, 1);
+          }
+        }
+
+        console.timeEnd("Removing Surface over " + name.substring(0, lastIndex));
+        self.setState({traces: self.state.traces});
+      }
+    }
   }
 
   removeSurface(event) {
@@ -726,6 +904,17 @@ class App extends React.Component {
     }
 
     this.setState({traces: this.state.traces});
+  }
+
+  plotClicked(event) {
+    this.showSurface(event);
+    // if (event.points[0].data.name.includes('highlight')) {
+    //   var name = event.points[0].data.name;
+    //   var lastIndex = name.lastIndexOf(" ")
+    //   alert("Removing Surface over " + name.substring(0, lastIndex));
+    // } else {
+    //   alert("Drawing Surface over " + event.points[0].data.name);
+    // }
   }
 
   reset() {
@@ -820,6 +1009,7 @@ class App extends React.Component {
                         pad: 4
                       }
                     }}
+                    onClick={this.plotClicked.bind(this)}
                   />
                 </div>
               )

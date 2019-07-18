@@ -19,14 +19,15 @@ class App extends React.Component {
       leveltoId: [[]], //e.g. leveltoId[level] will return an array of ids at that level
       idtoLevel: [], //e.g. idtoLevel[id] will return the level with that id
       childToParent: [], //e.g. childToParent[child] will return that child cluster's corresponding parent cluster
-      x: [[[]]], //e.g. x[level][id] will return an array of x values at that level on the slider with that id
-      y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
-      z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
+      // x: [[[]]], //e.g. x[level][id] will return an array of x values at that level on the slider with that id
+      // y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
+      // z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
       levelTextColor: [], //color of each level in the "Show Levels" section (black = level is currently shown, gray = level is currently hidden)
       hiddenPlots: [], //which plot is currently being used (which level on the this.state.traces variable)
       currCluster: 0, //cluster that has been inputted into the textfield to show surfaces
       tabs: ["block", "block", "none"], //display value for the tabs on the sidebar (e.g. Levels, Surfaces, Advanced Tools)
       toggledSurfaces: [], //lists which surfaces are being shown on the side under "Click Surface to Remove"
+      adjacencyList: [[]], //holds all connections between points
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -55,205 +56,206 @@ class App extends React.Component {
                       {
                         d3.csv(folder + 'clustering3d.csv').then(function(clustering3dData) {
                           d3.csv(folder + 'coordinates.csv').then(function(uniqueIdCoordinateData) {
-                            //console.log(data);
-                            console.group("Initial Loading Sequence");
-                            // self.state.loadingMessage = "Getting Merging Data...";
-                            // self.setState({loadingMessage: self.state.loadingMessage});
-                            console.time("Merging Data");
-                            //console.log("Getting Merging Data...")
-                            //self.forceUpdate();
+                            d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
+                              //console.log(data);
+                              console.group("Initial Loading Sequence");
+                              // self.state.loadingMessage = "Getting Merging Data...";
+                              // self.setState({loadingMessage: self.state.loadingMessage});
+                              console.time("Merging Data");
+                              //console.log("Getting Merging Data...")
+                              //self.forceUpdate();
 
-                            var merging3dText = merging3d.responseText.split('\n');
+                              var merging3dText = merging3d.responseText.split('\n');
 
-                            for (var i = 1; i < merging3dText.length; i++) {
-                              var line = merging3dText[i].split(';');
+                              for (var i = 1; i < merging3dText.length; i++) {
+                                var line = merging3dText[i].split(';');
 
-                              self.state.childToParent[line[0]] = line[1]; //gets child cluster to parent cluster values from merging3d.txt file
-                            }
-
-                            console.timeEnd("Merging Data");
-                            console.time("ID to Level Conversion Table");
-
-                            var lvlToId = [[]]; // Holds ID and corresponding levels
-                            var mergeLvl = []; // Holds merge level (currently not being used but stored in case needed in future)
-                            var name = []; // Holds name of each cluster
-
-                            var idToLvl = [[]]; // Holds conversion from id to level
-
-                            var clusters3dText = clusters3d.responseText.split('\n');
-
-                            // eslint-disable-next-line
-                            for (var i = 1; i < clusters3dText.length-1; i++) {
-                              var curr = clusters3dText[i].split(';')
-                              if (lvlToId[curr[1]] === undefined) {
-                                lvlToId[curr[1]] = [];
-                              }
-                              if (idToLvl[curr[0]] === undefined) {
-                                idToLvl[curr[0]] = [];
+                                self.state.childToParent[line[0]] = line[1]; //gets child cluster to parent cluster values from merging3d.txt file
                               }
 
-                              lvlToId[curr[1]].push(curr[0]); //adds id at index of lvl
-                              mergeLvl.push(curr[2]);
-                              name.push(curr[3]);
+                              console.timeEnd("Merging Data");
+                              console.time("ID to Level Conversion Table");
 
-                              idToLvl[curr[0]].push(curr[1]);
-                            }
+                              var lvlToId = [[]]; // Holds ID and corresponding levels
+                              var mergeLvl = []; // Holds merge level (currently not being used but stored in case needed in future)
+                              var name = []; // Holds name of each cluster
 
-                            // self.state.loadingMessage = "Getting Initial Plot View...";
-                            // self.setState({loadingMessage: self.state.loadingMessage});
+                              var idToLvl = [[]]; // Holds conversion from id to level
 
-                            console.timeEnd("ID to Level Conversion Table");
-                            console.time("Initial Plot View");
-                            //alert("Got ID to Level");
+                              var clusters3dText = clusters3d.responseText.split('\n');
 
-                            self.state.leveltoId = lvlToId;
-                            //self.setState({leveltoId: self.state.leveltoId});
-
-                            self.state.idtoLevel = idToLvl;
-                            //self.setState({idtoLevel: self.state.idtoLevel});
-
-                            // eslint-disable-next-line
-                            for (var i = 0; i < self.state.leveltoId.length; i++) {
-                             self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
-                             self.state.levelTextColor.push("black");
-
-                             if (i===0) {
-                               self.state.hiddenPlots.push("block");
-                             } else {
-                               self.state.hiddenPlots.push("none");
-                             }
-                            }
-
-                            //self.setState({opacity: self.state.opacity});
-
-                            var x = [[[]]];
-                            var y = [[[]]];
-                            var z = [[[]]];
-                            var pointId = [[[]]];
-
-                            // eslint-disable-next-line
-                            for (var i = 0; i < clustering3dData.length; i++) {
-                              if (x[0][clustering3dData[i].id] === undefined) {
-                                x[0][clustering3dData[i].id] = [];
-                                y[0][clustering3dData[i].id] = [];
-                                z[0][clustering3dData[i].id] = [];
-                                pointId[0][clustering3dData[i].id] = [];
-                              }
-
-                              x[0][clustering3dData[i].id].push(clustering3dData[i].x);
-                              y[0][clustering3dData[i].id].push(clustering3dData[i].y);
-                              z[0][clustering3dData[i].id].push(clustering3dData[i].z);
-                              pointId[0][clustering3dData[i].id].push(uniqueIdCoordinateData[i].id);
-                            }
-
-
-                            // self.state.loadingMessage = "Getting All Plot Views...";
-                            // self.setState({loadingMessage: self.state.loadingMessage});
-
-                            console.timeEnd("Initial Plot View");
-                            console.time("All Plot Views");
-                            //console.log("Getting All Plot Views...");
-                            //alert("Got Initial Plot View");
-
-                            //eslint-disable-next-line
-                            for (var i = 1; i < lvlToId.length; i++) {
-                              for (var j = x[i-1].length-1; j >= 0; j--) {
-
-                                if (x[i] === undefined) {
-                                  x[i] = [[]];
-                                  y[i] = [[]];
-                                  z[i] = [[]];
-                                  pointId[i] = [[]];
+                              // eslint-disable-next-line
+                              for (var i = 1; i < clusters3dText.length-1; i++) {
+                                var curr = clusters3dText[i].split(';')
+                                if (lvlToId[curr[1]] === undefined) {
+                                  lvlToId[curr[1]] = [];
+                                }
+                                if (idToLvl[curr[0]] === undefined) {
+                                  idToLvl[curr[0]] = [];
                                 }
 
-                                if (i !== 1) {
-                                  if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
-                                    if (x[i][self.state.childToParent[j]] === undefined) {
-                                      x[i][self.state.childToParent[j]] = [];
-                                      y[i][self.state.childToParent[j]] = [];
-                                      z[i][self.state.childToParent[j]] = [];
-                                      pointId[i][self.state.childToParent[j]] = [];
+                                lvlToId[curr[1]].push(curr[0]); //adds id at index of lvl
+                                mergeLvl.push(curr[2]);
+                                name.push(curr[3]);
+
+                                idToLvl[curr[0]].push(curr[1]);
+                              }
+
+                              self.state.leveltoId = lvlToId;
+                              self.state.idtoLevel = idToLvl;
+
+                              console.timeEnd("ID to Level Conversion Table");
+                              console.time("Tab Creation");
+
+                              // eslint-disable-next-line
+                              for (var i = 0; i < self.state.leveltoId.length; i++) {
+                               self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
+                               self.state.levelTextColor.push("black");
+
+                               if (i===0) {
+                                 self.state.hiddenPlots.push("block");
+                               } else {
+                                 self.state.hiddenPlots.push("none");
+                               }
+                              }
+
+                              console.timeEnd("Tab Creation");
+                              console.time("Initial Plot View");
+
+                              var x = [[[]]]; // holds x coordinate of each point (e.g. x[0][5] gives array of x coordinates at level 0 and id 5)
+                              var y = [[[]]]; // holds y coordinate of each point (e.g. y[0][5] gives array of y coordinates at level 0 and id 5)
+                              var z = [[[]]]; // holds z coordinate of each point (e.g. z[0][5] gives array of z coordinates at level 0 and id 5)
+                              var pointId = [[[]]]; // holds id assigned to each specific point (e.g. pointId[0][5] gives array of ids at level 0 and id 5)
+
+                              // eslint-disable-next-line
+                              for (var i = 0; i < clustering3dData.length; i++) {
+                                var coordinate = clustering3dData[i];
+                                if (x[0][coordinate.id] === undefined) {
+                                  x[0][coordinate.id] = [];
+                                  y[0][coordinate.id] = [];
+                                  z[0][coordinate.id] = [];
+                                  pointId[0][coordinate.id] = [];
+                                }
+
+                                // adds new points at index 'id'
+                                x[0][coordinate.id].push(coordinate.x);
+                                y[0][coordinate.id].push(coordinate.y);
+                                z[0][coordinate.id].push(coordinate.z);
+                                pointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
+                              }
+
+                              console.timeEnd("Initial Plot View");
+                              console.time("All Plot Views");
+
+                              //eslint-disable-next-line
+                              for (var i = 1; i < lvlToId.length; i++) {
+                                for (var j = x[i-1].length-1; j >= 0; j--) {
+                                  if (x[i] === undefined) {
+                                    x[i] = [[]];
+                                    y[i] = [[]];
+                                    z[i] = [[]];
+                                    pointId[i] = [[]];
+                                  }
+
+                                  if (i !== 1) {
+                                    if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
+                                      if (x[i][self.state.childToParent[j]] === undefined) {
+                                        x[i][self.state.childToParent[j]] = [];
+                                        y[i][self.state.childToParent[j]] = [];
+                                        z[i][self.state.childToParent[j]] = [];
+                                        pointId[i][self.state.childToParent[j]] = [];
+                                      }
+
+                                      // pushes new clusters before merging
+                                      x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
+                                      y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
+                                      z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+                                      pointId[i][self.state.childToParent[j]].push.apply(pointId[i][self.state.childToParent[j]], pointId[i-1][j]);
+                                    }
+                                  } else {
+                                    x[1] = x[0];
+                                    y[1] = y[0];
+                                    z[1] = z[0];
+                                    pointId[1] = pointId[0];
+                                  }
+                                }
+                              }
+
+                              console.timeEnd("All Plot Views");
+                              console.time("Plot Traces");
+
+                              // self.state.x = x;
+                              // self.state.y = y;
+                              // self.state.z = z;
+
+                              // eslint-disable-next-line
+                              for (var j = 0; j < x.length; j++) {
+                                // eslint-disable-next-line
+                                for (var i = 0; i < x[j].length; i++) {
+                                  var tempName = "";
+                                  //var tempColor = ""; //used for custom colors
+
+                                  if (name[i].includes("not_fault")) {
+                                    tempName = "Cluster"
+                                    //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
+                                  } else {
+                                    tempName = "Fault"
+                                    //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
+                                  }
+
+                                  if (idToLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
+                                    var trace = { // each trace is one cluster
+                                      x: x[j][i], y: y[j][i], z: z[j][i], // provides array of x,y,z coordinates for the points in each cluster
+                                      mode: 'markers',
+                                      //legendgroup: 'Level ' + idToLvl[i],
+                                      marker: {
+                                        size: self.state.size,
+                                        symbol: 'circle',
+                                        //color: tempColor,
+                                        color: '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6), // randomizes color
+                                        line: {
+                                          color: 'rgb(217, 217, 217)',
+                                          width: 0.5
+                                        },
+                                        opacity: self.state.opacity
+                                      },
+                                      type: 'scatter3d',
+                                      id: idToLvl[i],
+                                      pointIds: pointId[j][i],
+                                      name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')' // e.g Cluster 5 (Level 0)
+                                    };
+
+                                    if (self.state.traces[j] === undefined) {
+                                      self.state.traces[j] = [];
                                     }
 
-                                    x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
-                                    y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
-                                    z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
-                                    pointId[i][self.state.childToParent[j]].push.apply(pointId[i][self.state.childToParent[j]], pointId[i-1][j]);
+                                    //self.state.traces[j][i] = trace;
+                                    self.state.traces[j].push(trace);
                                   }
-                                } else {
-                                  x[1] = x[0];
-                                  y[1] = y[0];
-                                  z[1] = z[0];
-                                  pointId[1] = pointId[0];
                                 }
                               }
-                            }
 
-                            console.timeEnd("All Plot Views");
-                            console.time("Plot Traces");
+                              console.timeEnd("Plot Traces");
+                              console.time("Adjacency List");
 
-                            //console.log("Creating Plot Traces...");
-                            //alert("Generated All Plot Views");
+                              var adjacencyList = [[]];
 
-                            self.state.x = x;
-                            self.state.y = y;
-                            self.state.z = z;
-
-
-                            // eslint-disable-next-line
-                            for (var j = 0; j < x.length; j++) {
                               // eslint-disable-next-line
-                              for (var i = 0; i < x[j].length; i++) {
-                                var tempName = "";
-                                //var tempColor = "";
-
-                                if (name[i].includes("not_fault")) {
-                                  tempName = "Cluster"
-                                  //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
-                                } else {
-                                  tempName = "Fault"
-                                  //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
-                                }
-
-                                if (idToLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== []) {
-                                  var trace = {
-                                    x: x[j][i], y: y[j][i], z: z[j][i],
-                                    mode: 'markers',
-                                    //legendgroup: 'Level ' + idToLvl[i],
-                                    marker: {
-                                      size: self.state.size,
-                                      symbol: 'circle',
-                                      //color: tempColor,
-                                      color: '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6),
-                                      line: {
-                                        color: 'rgb(217, 217, 217)',
-                                        width: 0.5
-                                      },
-                                      opacity: self.state.opacity
-                                    },
-                                    type: 'scatter3d',
-                                    id: idToLvl[i],
-                                    pointIds: pointId[j][i],
-                                    name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')'
-                                  };
-
-                                  if (self.state.traces[j] === undefined) {
-                                    self.state.traces[j] = [];
-                                  }
-
-                                  //self.state.traces[j][i] = trace;
-                                  self.state.traces[j].push(trace);
-                                }
+                              for (var i = 0; i < adjacencyData.length; i++) {
+                                adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+                                adjacencyList[adjacencyData[i].id].pop();
                               }
-                            }
 
-                            console.timeEnd("Plot Traces");
-                            console.groupEnd();
-                            //console.time("Generated Plot");
-                            //alert("Created Plot Traces");
+                              self.state.adjacencyList = adjacencyList;
 
-                            //console.log(self.state.traces);
-                            self.setState({traces: self.state.traces});
+                              console.timeEnd("Adjacency List");
+                              console.groupEnd();
+                              //console.time("Generated Plot");
+                              //alert("Created Plot Traces");
+
+                              //console.log(self.state.traces);
+                              self.setState({traces: self.state.traces});
+                            });
                           });
                         });
                       }
@@ -290,83 +292,10 @@ class App extends React.Component {
     this.setState({ width: window.innerWidth, height: window.innerHeight });
   }
 
-  changeSize(event) {
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      // eslint-disable-next-line
-      this.state.traces[this.state.level][i].marker.size = event.target.value
-    }
-
-    this.setState({size: event.target.value});
-  }
-
-  changeOpacity(event) {
-    if (this.state.levelTextColor[event.target.id] === 'black') {
-      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-        //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
-        if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
-          // eslint-disable-next-line
-          this.state.traces[this.state.level][i].marker.opacity = event.target.value;
-        }
-      }
-
-      // eslint-disable-next-line
-      this.state.opacity[event.target.id] = event.target.value;
-      this.setState({opacity: this.state.opacity});
-    } else {
-      alert("Cannot Toggle this Slider because Level " + event.target.id + " is no Longer Being Shown.");
-    }
-  }
-
-  changeLevel(event) { // moving the level slider
-    // eslint-disable-next-line
-    this.state.hiddenPlots[this.state.level] = "none";
-    // eslint-disable-next-line
-    this.state.hiddenPlots[event.target.value] = "block";
-
-    for (var i = 0; i < this.state.levelTextColor.length; i++) {
-      if (i<event.target.value) {
-        // eslint-disable-next-line
-        this.state.levelTextColor[i] = "gray";
-      } else {
-        // eslint-disable-next-line
-        this.state.levelTextColor[i] = "black";
-      }
-    }
-
-    this.setState({level: event.target.value});
-  }
-
-  toggleLevel(event) { //whether the level is shown or not
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
-      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
-        if (this.state.traces[this.state.level][i].visible === false) {
-          //console.log(this.state.traces[this.state.level][i]);
-          // eslint-disable-next-line
-          this.state.traces[this.state.level][i].visible = true;
-          // eslint-disable-next-line
-          this.state.levelTextColor[event.target.id] = "black";
-          //event.target.innerText = "Hide Level " + event.target.id;
-        } else {
-          //console.log(this.state.traces[this.state.level][i]);
-          // eslint-disable-next-line
-          this.state.traces[this.state.level][i].visible = false;
-          // eslint-disable-next-line
-          this.state.levelTextColor[event.target.id] = "gray";
-          //event.target.innerText = "Show Level " + event.target.id;
-        }
-      }
-    }
-
-    this.setState({traces: this.state.traces})
-  }
-
-  updateCurrCluster(event) {
-    this.setState({currCluster: event.target.value});
-  }
-
-  toggleTab(event) {
+  toggleTab(event) { // on tab click
     var str;
+
+    // Identifies which tab has been clicked
     if (event.target.id === "0") {
       str = "Levels";
     } else if (event.target.id === "1") {
@@ -375,6 +304,7 @@ class App extends React.Component {
       str = "Advanced Tools"
     }
 
+    // Either hides or shows the tab depending on current tab display
     if (this.state.tabs[Number(event.target.id)] === "none") {
       // eslint-disable-next-line
       this.state.tabs[Number(event.target.id)] = "block";
@@ -386,6 +316,45 @@ class App extends React.Component {
       event.target.innerHTML = "&#9654; " + str;
       this.setState({tabs: this.state.tabs});
     }
+  }
+
+  changeLevel(event) { // on level slider move
+    // eslint-disable-next-line
+    this.state.hiddenPlots[this.state.level] = "none";
+    // eslint-disable-next-line
+    this.state.hiddenPlots[event.target.value] = "block";
+
+    for (var i = 0; i < this.state.levelTextColor.length; i++) {
+      if (i<event.target.value) {
+        // eslint-disable-next-line
+        this.state.levelTextColor[i] = "gray"; // sets color to gray if the level is less than the current level
+      } else {
+        // eslint-disable-next-line
+        this.state.levelTextColor[i] = "black";
+      }
+    }
+
+    this.setState({level: event.target.value});
+  }
+
+  toggleLevel(event) { //whether the level is shown or not
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+        if (this.state.traces[this.state.level][i].visible === false) { // if not visible, make the level visible
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].visible = true;
+          // eslint-disable-next-line
+          this.state.levelTextColor[event.target.id] = "black";
+        } else { // else hide the level
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].visible = false;
+          // eslint-disable-next-line
+          this.state.levelTextColor[event.target.id] = "gray";
+        }
+      }
+    }
+
+    this.setState({traces: this.state.traces})
   }
 
   // showApproximateSurface(event) {
@@ -533,8 +502,22 @@ class App extends React.Component {
   //   }
   // }
 
-  showExactSurface(event) {
-    var folder = this.state.folder;
+  plotClicked(event) { // on plot clicked event
+    this.showSurfaceOnClick(event);
+    // if (event.points[0].data.name.includes('highlight')) {
+    //   var name = event.points[0].data.name;
+    //   var lastIndex = name.lastIndexOf(" ")
+    //   alert("Removing Surface over " + name.substring(0, lastIndex));
+    // } else {
+    //   alert("Drawing Surface over " + event.points[0].data.name);
+    // }
+  }
+
+  updateCurrCluster(event) { // changes state variable currCluster when "Show Surface" text field is changed
+    this.setState({currCluster: event.target.value});
+  }
+
+  showSurfaceButton(event) { // on click of "Show Surface"
     var alreadyPresent = false;
     var index = null;
     let self = this;
@@ -555,62 +538,34 @@ class App extends React.Component {
         }
       }
 
-      if (!alreadyPresent) {
-        // function includesId(idsInCluster, temp) {
-        //   for (var i = 0; i < idsInCluster.length; i++) {
-        //     if (idsInCluster[i] === Number(temp)) {
-        //       //console.log("true");
-        //       return true;
-        //     }
-        //   }
-        //   return false;
-        // }
-
-        // console.log(currCluster.pointIds);
-
+      if (!alreadyPresent) { // if the surface doesn't exist yet
         console.group("Surface Over " + currCluster.name);
-        console.time("Adjacency List");
-        //console.log("Getting Adjacency List...");
 
-        d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
-          var adjacencyList = [[]];
-          var pointId = currCluster.pointIds;
-          //console.log(adjacencyData);
+        var adjacencyList = self.state.adjacencyList;
+        var pointId = currCluster.pointIds;
 
-          for (var i = 0; i < adjacencyData.length; i++) {
-            adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
-            adjacencyList[adjacencyData[i].id].pop();
-          }
+        console.time("Previous to New ID Conversion Table");
+        var prevToNewId = [];
+        // eslint-disable-next-line
+        for (var i = 0; i < pointId.length; i++) {
+          prevToNewId[pointId[i]] = i;
+        }
 
-          //console.log(adjacencyList);
+        console.timeEnd("Previous to New ID Conversion Table");
+        console.time("Triangle Counting");
 
-          console.timeEnd("Adjacency List");
-          console.time("Previous to New ID Conversion Table");
-          //console.log("Getting Previous to New ID Conversion Table");
-          var prevToNewId = [];
-          // eslint-disable-next-line
-          for (var i = 0; i < pointId.length; i++) {
-            prevToNewId[pointId[i]] = i;
-          }
+        var connections = [[]]; // shows the connections between nodes as triangles
+        var connectionsT = [[]]; // transpose of 'connections' variable
+        connectionsT[0] = [];
+        connectionsT[1] = [];
+        connectionsT[2] = [];
 
-          console.timeEnd("Previous to New ID Conversion Table");
-          console.time("Triangle Counting");
-          //console.log("Getting Connections Between Points...");
-
-          var connections = [[]];
-          var connectionsT = [[]];
-          connectionsT[0] = [];
-          connectionsT[1] = [];
-          connectionsT[2] = [];
-
-          // eslint-disable-next-line
-          for (var i = 0; i < pointId.length; i++) {
-            var currId = pointId[i];
-            if (adjacencyList[currId] === undefined) {
-              console.log(currId);
-              console.log(adjacencyList);
-            }
-
+        // eslint-disable-next-line
+        for (var i = 0; i < pointId.length; i++) {
+          var currId = pointId[i];
+          if (adjacencyList[currId] === undefined) { // if the current id doesn't exist
+            console.error("Adjacency List at ID " + currId + " is undefined");
+          } else { // else find the connections
             for (var j = 0; j < adjacencyList[currId].length-1; j++) {
               if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
                 for (var k = j+1; k < adjacencyList[currId].length; k++) {
@@ -626,91 +581,76 @@ class App extends React.Component {
               }
             }
           }
+        }
 
-          connections.shift();
+        /* pseudocode for the above algorithm
 
-          console.timeEnd("Triangle Counting");
-          console.time("3D Mesh Trace");
-
-          //console.log(idsInCluster);
-          //console.log(connections);
-
-          // for (var i = 0; i < connections.length; i++) {
-          //   for (var j = 0; j < connections[i].length; j++) {
-          //     if (connections[i][j] === 429) {
-          //       console.log("Here: " + i);
-          //     }
-          //   }
-          // }
-
-          // for (var i = 0; i < self.state.traces.length; i++) {
-          //   for (var j = 0; j < self.state.traces[i].length; j++) {
-          //     for (var k = 0; k < self.state.traces[i][j].x.length; k++) {
-          //       if (self.state.traces[i][j].x[k] === "1992.1750" && self.state.traces[i][j].y[k] === "2055.3500" && self.state.traces[i][j].z[k] === "-0.2201") {
-          //         console.log("Found in " + self.state.traces[i][j].name + " on Level " + i + " at index " + k);
-          //       }
-          //     }
-          //   }
-          // }
-
-          //console.log(connections);
-
-          if (connections.length > 0) {
-            var trace = {
-              type: 'mesh3d',
-              x: currCluster.x,
-              y: currCluster.y,
-              z: currCluster.z,
-              i: connectionsT[0],
-              j: connectionsT[1],
-              k: connectionsT[2],
-              // i: [0],
-              // j: [1],
-              // k: [2],
-              // facecolor: [
-              //   currCluster.marker.color,
-              //   currCluster.marker.color,
-              //   currCluster.marker.color,
-              //   currCluster.marker.color
-              // ],
-              color: currCluster.marker.color,
-              marker: {
-                opacity: 1,
-              },
-              id: currCluster.id,
-              name: currCluster.name + ' highlight',
-
-              flatshading: true,
-            }
-
-            self.state.traces[self.state.level].push(trace);
-            //console.log(trace);
-
-            //console.log("Plotting Surface from " + currCluster.name + "...");
-            //console.log(self.state.traces);
-
-            self.state.toggledSurfaces.push(currCluster.name);
-            self.state.toggledSurfaces.sort();
-
-            console.timeEnd("3D Mesh Trace");
-          } else if (currCluster.name.includes("Fault")) {
-            alert("No connections found. Faults are only connected to lower level points.");
+        Iterate through the list of IDs in the current cluster (currCluster) {
+          currId = pointId[i]
+          if (adjacency list at currId does not exist) {
+            log error
           } else {
-            alert("No connections found.");
+            Iterate through the adjacency list for the current ID {
+              if (some node A in the adjacency list exists in the cluster && it has an ID greater than currId) {
+                Iterate through the adjacency list for the current ID again {
+                  if (some node B in the adjacency list of currId also exists in the cluster && node B also exists in the adjacency list of node A && ID of node B is greater than ID of node A) {
+                    if (none of the IDs are equal) {
+                      add the connection to variable 'connections' and variable 'connectionsT'
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+
+        */
+
+        connections.shift();
+
+        console.timeEnd("Triangle Counting");
+        console.time("3D Mesh Trace");
+
+        if (connections.length > 0) {
+          var trace = { // creates a trace for the new surface with i,j,k values of the connections
+            type: 'mesh3d',
+            x: currCluster.x,
+            y: currCluster.y,
+            z: currCluster.z,
+            i: connectionsT[0],
+            j: connectionsT[1],
+            k: connectionsT[2],
+            color: currCluster.marker.color,
+            marker: {
+              opacity: 1,
+            },
+            id: currCluster.id,
+            name: currCluster.name + ' highlight',
+
+            flatshading: true,
           }
 
-          console.groupEnd();
+          self.state.traces[self.state.level].push(trace);
+          self.state.toggledSurfaces.push(currCluster.name);
+          self.state.toggledSurfaces.sort();
 
-          self.setState({traces: self.state.traces});
-        });
+          console.timeEnd("3D Mesh Trace");
+        } else if (currCluster.name.includes("Fault")) {
+          alert("No connections found. Faults are only connected to lower level points.");
+        } else {
+          alert("No connections found.");
+        }
+
+        console.groupEnd();
+
+        self.setState({traces: self.state.traces});
       } else {
         console.log("Surface Over " + currCluster.name + " Already Exists", "color: #FF0000")
       }
     }
   }
 
-  showSurface(event) {
-    var folder = this.state.folder;
+  showSurfaceOnClick(event) {
     var alreadyPresent = false;
     var index = null;
     let self = this;
@@ -737,62 +677,33 @@ class App extends React.Component {
       }
 
       if (!alreadyPresent) {
-
-        // function includesId(idsInCluster, temp) {
-        //   for (var i = 0; i < idsInCluster.length; i++) {
-        //     if (idsInCluster[i] === Number(temp)) {
-        //       //console.log("true");
-        //       return true;
-        //     }
-        //   }
-        //   return false;
-        // }
-
-        // console.log(currCluster.pointIds);
-
         console.group("Surface Over " + currCluster.name);
-        console.time("Adjacency List");
-        //console.log("Getting Adjacency List...");
 
-        d3.csv(folder + 'adjacency.csv').then(function(adjacencyData) {
-          var adjacencyList = [[]];
-          var pointId = currCluster.pointIds;
-          //console.log(adjacencyData);
+        var adjacencyList = self.state.adjacencyList;
+        var pointId = currCluster.pointIds;
 
-          for (var i = 0; i < adjacencyData.length; i++) {
-            adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
-            adjacencyList[adjacencyData[i].id].pop();
-          }
+        console.time("Previous to New ID Conversion Table");
+        var prevToNewId = [];
+        // eslint-disable-next-line
+        for (var i = 0; i < pointId.length; i++) {
+          prevToNewId[pointId[i]] = i;
+        }
 
-          //console.log(adjacencyList);
+        console.timeEnd("Previous to New ID Conversion Table");
+        console.time("Triangle Counting");
 
-          console.timeEnd("Adjacency List");
-          console.time("Previous to New ID Conversion Table");
-          //console.log("Getting Previous to New ID Conversion Table");
-          var prevToNewId = [];
-          // eslint-disable-next-line
-          for (var i = 0; i < pointId.length; i++) {
-            prevToNewId[pointId[i]] = i;
-          }
+        var connections = [[]];
+        var connectionsT = [[]];
+        connectionsT[0] = [];
+        connectionsT[1] = [];
+        connectionsT[2] = [];
 
-          console.timeEnd("Previous to New ID Conversion Table");
-          console.time("Triangle Counting");
-          //console.log("Getting Connections Between Points...");
-
-          var connections = [[]];
-          var connectionsT = [[]];
-          connectionsT[0] = [];
-          connectionsT[1] = [];
-          connectionsT[2] = [];
-
-          // eslint-disable-next-line
-          for (var i = 0; i < pointId.length; i++) {
-            var currId = pointId[i];
-            if (adjacencyList[currId] === undefined) {
-              console.log(currId);
-              console.log(adjacencyList);
-            }
-
+        // eslint-disable-next-line
+        for (var i = 0; i < pointId.length; i++) {
+          var currId = pointId[i];
+          if (adjacencyList[currId] === undefined) { // if the current id doesn't exist
+            console.error("Adjacency List at ID " + currId + " is undefined");
+          } else { // else find the connections
             for (var j = 0; j < adjacencyList[currId].length-1; j++) {
               if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
                 for (var k = j+1; k < adjacencyList[currId].length; k++) {
@@ -809,58 +720,67 @@ class App extends React.Component {
             }
           }
 
-          connections.shift();
+          /* pseudocode for the above algorithm
 
-          console.timeEnd("Triangle Counting");
-          console.time("3D Mesh Trace");
-
-          if (connections.length > 0) {
-            var trace = {
-              type: 'mesh3d',
-              x: currCluster.x,
-              y: currCluster.y,
-              z: currCluster.z,
-              i: connectionsT[0],
-              j: connectionsT[1],
-              k: connectionsT[2],
-              // i: [0],
-              // j: [1],
-              // k: [2],
-              // facecolor: [
-              //   currCluster.marker.color,
-              //   currCluster.marker.color,
-              //   currCluster.marker.color,
-              //   currCluster.marker.color
-              // ],
-              color: currCluster.marker.color,
-              marker: {
-                opacity: 1,
-              },
-              id: currCluster.id,
-              name: currCluster.name + ' highlight',
-
-              flatshading: true,
+          Iterate through the list of IDs in the current cluster (currCluster) {
+            currId = pointId[i]
+            if (adjacency list at currId does not exist) {
+              log error
+            } else {
+              Iterate through the adjacency list for the current ID {
+                if (some node A in the adjacency list exists in the cluster && it has an ID greater than currId) {
+                  Iterate through the adjacency list for the current ID again {
+                    if (some node B in the adjacency list of currId also exists in the cluster && node B also exists in the adjacency list of node A && ID of node B is greater than ID of node A) {
+                      if (none of the IDs are equal) {
+                        add the connection to variable 'connections' and variable 'connectionsT'
+                      }
+                    }
+                  }
+                }
+              }
             }
-
-            self.state.traces[self.state.level].push(trace);
-            //console.log(trace);
-
-            //console.log("Plotting Surface from " + currCluster.name + "...");
-            //console.log(self.state.traces);
-
-            self.state.toggledSurfaces.push(currCluster.name);
-            self.state.toggledSurfaces.sort();
-
-            console.timeEnd("3D Mesh Trace");
-          } else if (currCluster.name.includes("Fault")) {
-            alert("No connections found. Faults are only connected to lower level points.");
-          } else {
-            alert("No connections found.");
           }
 
-          console.groupEnd();
-          self.setState({traces: self.state.traces});
-        });
+          */
+        }
+
+        connections.shift();
+
+        console.timeEnd("Triangle Counting");
+        console.time("3D Mesh Trace");
+
+        if (connections.length > 0) {
+          var trace = {
+            type: 'mesh3d',
+            x: currCluster.x,
+            y: currCluster.y,
+            z: currCluster.z,
+            i: connectionsT[0],
+            j: connectionsT[1],
+            k: connectionsT[2],
+            color: currCluster.marker.color,
+            marker: {
+              opacity: 1,
+            },
+            id: currCluster.id,
+            name: currCluster.name + ' highlight',
+
+            flatshading: true,
+          }
+
+          self.state.traces[self.state.level].push(trace);
+          self.state.toggledSurfaces.push(currCluster.name);
+          self.state.toggledSurfaces.sort();
+
+          console.timeEnd("3D Mesh Trace");
+        } else if (currCluster.name.includes("Fault")) {
+          alert("No connections found. Faults are only connected to lower level points.");
+        } else {
+          alert("No connections found.");
+        }
+
+        console.groupEnd();
+        self.setState({traces: self.state.traces});
       } else {
         var name = event.points[0].data.name;
         var lastIndex = name.lastIndexOf(" ")
@@ -886,18 +806,13 @@ class App extends React.Component {
         //console.log(i);
         this.state.traces[this.state.level].splice(i, 1);
         i--;
-        // console.log(this.state.traces[this.state.level].length);
-
         removed = true;
       } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.toggledSurfaces[event.target.id]) {
-        //console.log(i);
         // eslint-disable-next-line
         this.state.traces[this.state.level][i].mode = 'markers';
         removed = true;
       }
     }
-
-    // console.log(this.state.traces[this.state.level]);
 
     if (removed) {
       this.state.toggledSurfaces.splice(event.target.id, 1);
@@ -906,21 +821,36 @@ class App extends React.Component {
     this.setState({traces: this.state.traces});
   }
 
-  plotClicked(event) {
-    this.showSurface(event);
-    // if (event.points[0].data.name.includes('highlight')) {
-    //   var name = event.points[0].data.name;
-    //   var lastIndex = name.lastIndexOf(" ")
-    //   alert("Removing Surface over " + name.substring(0, lastIndex));
-    // } else {
-    //   alert("Drawing Surface over " + event.points[0].data.name);
-    // }
+  changeSize(event) { // when size slider is moved
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      // eslint-disable-next-line
+      this.state.traces[this.state.level][i].marker.size = event.target.value
+    }
+
+    this.setState({size: event.target.value});
+  }
+
+
+  changeOpacity(event) { // when opacity slider(s) is moved
+    if (this.state.levelTextColor[event.target.id] === 'black') {
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].marker.opacity = event.target.value; // sets opacity to the value of the slider
+        }
+      }
+
+      // eslint-disable-next-line
+      this.state.opacity[event.target.id] = event.target.value;
+      this.setState({opacity: this.state.opacity});
+    } else {
+      alert("Cannot Toggle this Slider because Level " + event.target.id + " is no Longer Being Shown.");
+    }
   }
 
   reset() {
     for (var i = 0; i < this.state.traces.length; i++) {
       for (var j = 0; j < this.state.traces[i].length; j++) {
-        //console.log(parseInt(this.state.traces[this.state.level][i].id[0]) == event.target.id);
         if (this.state.traces[i][j] !== undefined) {
           // eslint-disable-next-line
           this.state.traces[i][j].marker.opacity = event.target.value;
@@ -949,25 +879,24 @@ class App extends React.Component {
     this.setState({level: 0});
   }
 
-  render() {
-    if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) {
-      var data = [];
-
-      for (var i = this.state.level; i < this.state.leveltoId.length; i++) {
-        if (this.state.leveltoId[i] !== undefined) {
-          for (var j = 0; j < this.state.leveltoId[i].length; j++) {
-            //console.log(this.state.traces[this.state.level]);
-            if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
-              data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
-            }
-          }
-        }
-      }
+  render() { // renders the webpage
+    if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) { // if all data to plot is present
+      // var data = [];
+      //
+      // for (var i = this.state.level; i < this.state.leveltoId.length; i++) {
+      //   if (this.state.leveltoId[i] !== undefined) {
+      //     for (var j = 0; j < this.state.leveltoId[i].length; j++) {
+      //       if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
+      //         data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
+      //       }
+      //     }
+      //   }
+      // }
 
       var traces = this.state.traces;
       var lvltoId = this.state.leveltoId;
 
-      return (
+      return ( // code below is in JSX
         <div>
           <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>
           <div style={{height: (this.state.height)/10*9}}>
@@ -979,26 +908,25 @@ class App extends React.Component {
                     layout={{
                       width: this.state.width/4*3,
                       height: (this.state.height)/10*9,
-                      //title: 'spaND Visualization',
                       showlegend: true,
                       scene: {
                         aspectmode:'manual',
-                        aspectratio: {
+                        aspectratio: { // remove this in a normal situation, only being used because current plot is hard to visualize
                           x:2,
                           y:2,
                           z:1
                         },
                         xaxis: {
                           autorange: true,
-                          //range:[0,10]
+                          //range:[0,10]  // used to set x-range manually
                         },
                         yaxis: {
                           autorange: true,
-                          //range:[0,10]
+                          //range:[0,10] // used to set y-range manually
                         },
                         zaxis: {
                           autorange: true,
-                          //range:[0,10]
+                          //range:[0,10] // used to set z-range manually
                         },
                       },
                       margin: {
@@ -1009,7 +937,7 @@ class App extends React.Component {
                         pad: 4
                       }
                     }}
-                    onClick={this.plotClicked.bind(this)}
+                    onClick={this.plotClicked.bind(this)} // onClick -> show the surface for that cluster
                   />
                 </div>
               )
@@ -1018,7 +946,6 @@ class App extends React.Component {
             <div className="slidecontainer" style={{marginLeft:(this.state.width)/4*3 + 100 + "px", marginTop:-(this.state.height)/10*9 + 20 + "px"}}>
               <div>
                 <button id="0" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Levels</button>
-
                 <div style={{display: this.state.tabs[0], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Level: {this.state.level}
                   <br/>
@@ -1044,11 +971,10 @@ class App extends React.Component {
 
               <div>
                 <button id="1" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9660; Surfaces</button>
-
                 <div style={{display: this.state.tabs[1], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
-                  <button onClick={this.showExactSurface.bind(this)}>Show Surface</button>
+                  <button onClick={this.showSurfaceButton.bind(this)}>Show Surface</button>
                   {/*<button onClick={this.showApproximateSurface.bind(this)}>Show Approximate Surface</button>*/}
                   <br/>
                   <br/>
@@ -1065,7 +991,6 @@ class App extends React.Component {
                 </div>
               </div>
 
-
               <br/>
 
               <div>
@@ -1077,7 +1002,6 @@ class App extends React.Component {
                   <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
                   <br/>
                   <br/>
-
                   {
                     lvltoId.map((lvltoId, index) =>
                       <div key={index} style={{color: this.state.levelTextColor[index]}}>
@@ -1089,12 +1013,9 @@ class App extends React.Component {
                       </div>
                     )
                   }
-
                 </div>
-
                 <br/>
               </div>
-
               <button style={{borderRadius: 0, borderStyle: 'solid', borderWidth: 2+'px', borderColor: 'red', width: 90+'%', color: 'red', padding: 5+'px'}} onClick={this.reset.bind(this)}>Reset</button>
             </div>
           </div>

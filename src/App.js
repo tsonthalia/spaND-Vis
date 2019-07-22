@@ -9,7 +9,7 @@ class App extends React.Component {
     super(props);
 
     this.state = {
-      folder: "data/A.70.5/", //change this line to change the set of data being used
+      folder: "data/A.70.7/", //change this line to change the set of data being used
       width: 0, //width of the updateWindowDimensions
       height: 0, //height of the window
       traces: [[]], //e.g. traces[level][id] will return the trace at that level and with that id

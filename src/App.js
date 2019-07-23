@@ -424,29 +424,38 @@ class App extends React.Component {
   }
 
   toggleLevel(event) { //whether the level is shown or not
+    var changed = false;
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
+        changed = true;
         if (this.state.traces[this.state.level][i].visible === false) { // if not visible, make the level visible
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = true;
-          // eslint-disable-next-line
-          this.state.levelTextColor[event.target.id] = "black";
-
-          if (this.state.statsTraces[this.state.level][i] !== undefined) {
-            // eslint-disable-next-line
-            this.state.statsTraces[this.state.level][i].visible = true;
-          }
         } else { // else hide the level
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = false;
-          // eslint-disable-next-line
-          this.state.levelTextColor[event.target.id] = "gray";
-
-          if (this.state.statsTraces[this.state.level][i] !== undefined) {
-            // eslint-disable-next-line
-            this.state.statsTraces[this.state.level][i].visible = false;
-          }
         }
+      }
+
+      if (this.state.statsTraces[this.state.level][i] !== undefined && this.state.statsTraces[this.state.level][i].id[0] === event.target.id) {
+        changed = true;
+        if (this.state.statsTraces[this.state.level][i].visible === false) { // if not visible, make the level visible
+          // eslint-disable-next-line
+          this.state.statsTraces[this.state.level][i].visible = true;
+        } else {
+          // eslint-disable-next-line
+          this.state.statsTraces[this.state.level][i].visible = false;
+        }
+      }
+    }
+
+    if (changed) {
+      if (this.state.levelTextColor[event.target.id] === "gray") {
+        // eslint-disable-next-line
+        this.state.levelTextColor[event.target.id] = "black";
+      } else {
+        // eslint-disable-next-line
+        this.state.levelTextColor[event.target.id] = "gray";
       }
     }
 
@@ -1036,6 +1045,7 @@ class App extends React.Component {
       // }
 
       var traces = this.state.traces;
+      var statsTraces = this.state.statsTraces;
       var lvltoId = this.state.leveltoId;
 
       return ( // code below is in JSX
@@ -1046,7 +1056,7 @@ class App extends React.Component {
               traces.map((currLevelTrace, index) =>
                 <div key={index} style={{display: this.state.hiddenPlots[index]}}>
                   <Plot
-                    data={this.state.traces[index]}
+                    data={currLevelTrace}
                     layout={{
                       width: this.state.width/4*3,
                       height: (this.state.height)/10*9,
@@ -1166,15 +1176,19 @@ class App extends React.Component {
           </div>
           <div style={{display: this.state.RDiagDisplay}}>
             {
-              traces.map((currLevelTrace, index) =>
+              statsTraces.map((currLevelTrace, index) =>
                 <div key={index} style={{display: this.state.hiddenPlots[index]}}>
                   <Plot
-                    data={this.state.statsTraces[index]}
+                    data={currLevelTrace}
                     layout={{
                       width: this.state.width/4*3,
-                      height: (this.state.height)/10*9,
+                      height: this.state.height,
                       showlegend: true,
                       hovermode: "closest",
+                      yaxis: {
+                        type: 'log',
+                        exponentformat: 'power',
+                      },
                     }}
                     onClick={this.showStatsTrace.bind(this)}
                     onDoubleClick={this.resetStatsTrace.bind(this)}

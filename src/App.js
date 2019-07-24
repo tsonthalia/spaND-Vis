@@ -13,7 +13,7 @@ class App extends React.Component {
       width: 0, //width of the updateWindowDimensions
       height: 0, //height of the window
       traces: [[]], //e.g. traces[level][id] will return the trace at that level and with that id
-      size: 5, //size of the points on the scatterplot
+      markerSize: 5, //size of the points on the scatterplot
       opacity: [], //e.g. opacity[level] will return opacity of that level
       level: 0, //current slider level
       leveltoId: [[]], //e.g. leveltoId[level] will return an array of ids at that level
@@ -28,8 +28,11 @@ class App extends React.Component {
       tabs: ["block", "block", "none"], //display value for the tabs on the sidebar (e.g. Levels, Surfaces, Advanced Tools)
       toggledSurfaces: [], //lists which surfaces are being shown on the side under "Click Surface to Remove"
       adjacencyList: [[]], //holds all connections between points
-      statsTraces: [[]],
-      RDiagDisplay: "none",
+      statsTraces: [[]], //holds the traces for the Diagonal of R plot
+      RDiagDisplay: "none", //whether the Diagonal of R plot is being shown
+      rank: [], //array of ranks of each cluster
+      size: [], //array of size of each cluster
+      sparsified: 0, //value of sparsify cluster
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -62,8 +65,6 @@ class App extends React.Component {
                               d3.csv(folder + 'stats3d.csv').then(function(stats3dData) {
                                 //console.log(data);
                                 console.group("Initial Loading Sequence");
-                                // self.state.loadingMessage = "Getting Merging Data...";
-                                // self.setState({loadingMessage: self.state.loadingMessage});
                                 console.time("Merging Data");
                                 //console.log("Getting Merging Data...")
                                 //self.forceUpdate();
@@ -141,9 +142,9 @@ class App extends React.Component {
                                   }
 
                                   // adds new points at index 'id'
-                                  x[0][coordinate.id].push(coordinate.x);
-                                  y[0][coordinate.id].push(coordinate.y);
-                                  z[0][coordinate.id].push(coordinate.z);
+                                  x[0][coordinate.id].push(Number(coordinate.x));
+                                  y[0][coordinate.id].push(Number(coordinate.y));
+                                  z[0][coordinate.id].push(Number(coordinate.z));
                                   pointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
                                 }
 
@@ -188,6 +189,8 @@ class App extends React.Component {
                                 console.time("Stats Data");
 
                                 var stats = [[]];
+                                var size = [];
+                                var rank = [];
 
                                 // eslint-disable-next-line
                                 for (var i = 0; i < stats3dData.length; i++) {
@@ -203,26 +206,24 @@ class App extends React.Component {
                                   } else {
                                     stats[stats3dData[i].id] = undefined;
                                   }
+
+                                  size[stats3dData[i].id] = stats3dData[i].size;
+                                  rank[stats3dData[i].id] = stats3dData[i].rank;
                                 }
+
+                                self.state.rank = rank;
+                                self.state.size = size;
 
                                 console.timeEnd("Stats Data");
                                 console.time("Plot Traces");
-
-                                // self.state.x = x;
-                                // self.state.y = y;
-                                // self.state.z = z;
 
                                 // eslint-disable-next-line
                                 for (var j = 0; j < x.length; j++) {
                                   // eslint-disable-next-line
                                   for (var i = 0; i < x[j].length; i++) {
                                     var tempName = "";
-                                    var tempColor = '#' + ("000000" + Math.random().toString(16).slice(2, 8).toUpperCase()).slice(-6);  // randomizes color
-                                    // var letters = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"];
-                                    // var tempColor = '#';
-                                    // for (var i = 0; i < 6; i++) {
-                                    //   tempColor += letters[Math.floor(Math.random() * 16)];
-                                    // }
+
+                                    var tempColor = 'rgba(' + Math.round(Math.random()*255) + "," + Math.round(Math.random()*255) + "," + Math.round(Math.random()*255) + ", 1)";
 
                                     if (name[i].includes("not_fault")) {
                                       tempName = "Cluster"
@@ -233,14 +234,19 @@ class App extends React.Component {
                                     }
 
                                     if (idToLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== [] && x[j][i].length !== 0) {
+                                      var colorArray = [];
+                                      for (var k = 0; k < x[j][i].length; k++) {
+                                        colorArray.push(tempColor);
+                                      }
+
                                       var trace = { // each trace is one cluster
                                         x: x[j][i], y: y[j][i], z: z[j][i], // provides array of x,y,z coordinates for the points in each cluster
                                         mode: 'markers',
                                         //legendgroup: 'Level ' + idToLvl[i],
                                         marker: {
-                                          size: self.state.size,
+                                          size: self.state.markerSize,
                                           symbol: 'circle',
-                                          color: tempColor,
+                                          color: colorArray,
                                           line: {
                                             color: 'rgb(217, 217, 217)',
                                             width: 0.5
@@ -250,6 +256,7 @@ class App extends React.Component {
                                         type: 'scatter3d',
                                         id: idToLvl[i],
                                         pointIds: pointId[j][i],
+                                        cluster: i,
                                         name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')', // e.g Cluster 5 (Level 0)
                                       };
 
@@ -277,14 +284,10 @@ class App extends React.Component {
                                         self.state.traces[j] = [];
                                       }
 
-                                      //self.state.traces[j][i] = trace;
                                       self.state.traces[j].push(trace);
                                     }
                                   }
                                 }
-
-                                // console.log(self.state.traces);
-                                // console.log(self.state.statsTraces);
 
                                 console.timeEnd("Plot Traces");
                                 console.time("Adjacency List");
@@ -300,28 +303,8 @@ class App extends React.Component {
                                 self.state.adjacencyList = adjacencyList;
 
                                 console.timeEnd("Adjacency List");
-                                // console.time("Stats Traces");
-                                //
-                                // // eslint-disable-next-line
-                                // for (var i = 0; i < stats.length; i++) {
-                                //   if (stats[i] !== undefined) {
-                                //     var trace = {
-                                //       x: Array.apply(null, {length: stats[i].length}).map(Number.call, Number),
-                                //       y: stats[i],
-                                //       mode: 'lines',
-                                //       name: 'Cluster ' + i,
-                                //     }
-                                //
-                                //     self.state.statsTraces.push(trace);
-                                //   }
-                                // }
-                                //
-                                // console.timeEnd("Stats Traces");
                                 console.groupEnd();
-                                //console.time("Generated Plot");
-                                //alert("Created Plot Traces");
 
-                                //console.log(self.state.traces);
                                 self.setState({traces: self.state.traces});
                               });
                             });
@@ -420,7 +403,89 @@ class App extends React.Component {
       }
     }
 
+    // eslint-disable-next-line
+    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+      var currCluster = this.state.traces[this.state.level][i];
+      var color = currCluster.marker.color[0];
+
+      currCluster.marker.size = 5;
+
+      var tempColors = [];
+      // eslint-disable-next-line
+      for (var j = 0; j < currCluster.x.length; j++) {
+        tempColors[j] = color;
+      }
+
+      currCluster.marker.color = tempColors;
+    }
+
+    this.setState({sparsified: 0});
     this.setState({level: event.target.value});
+  }
+
+  sparsify() {
+    if (this.state.sparsified === 0) {
+      var rank = this.state.rank;
+      var size = this.state.size;
+
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        var currCluster = this.state.traces[this.state.level][i];
+
+        if (rank[currCluster.cluster] !== size[currCluster.cluster]) {
+          //currCluster.marker.size = 5;
+
+          var length = currCluster.x.length;
+          var color = currCluster.marker.color[0];
+          //console.log(length);
+          var randNums = [];
+          var tempColors = [];
+
+          for (var j = 0; j < currCluster.x.length; j++) {
+            tempColors[j] = color;
+          }
+
+          // eslint-disable-next-line
+          for (var j = 0; j < currCluster.x.length - rank[currCluster.cluster]; j++) {
+            var exists = true;
+            var random;
+            while(exists) {
+              random = (Math.random()*(length-1)+1) | 0;
+              if (!randNums.includes(random)) {
+                exists = false;
+              }
+            }
+
+            tempColors[random] = 'rgba(0,0,0,0)';
+            randNums.push(random);
+          }
+
+          currCluster.marker.color = tempColors;
+        }
+      }
+
+      this.setState({sparsified: 1})
+    } else {
+      // eslint-disable-next-line
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        // eslint-disable-next-line
+        var currCluster = this.state.traces[this.state.level][i];
+        // eslint-disable-next-line
+        var color = currCluster.marker.color[0];
+
+        currCluster.marker.size = 5;
+
+        // eslint-disable-next-line
+        var tempColors = [];
+        // eslint-disable-next-line
+        for (var j = 0; j < currCluster.x.length; j++) {
+          tempColors[j] = color;
+        }
+
+        currCluster.marker.color = tempColors;
+      }
+
+      this.setState({sparsified: 0});
+    }
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -461,151 +526,6 @@ class App extends React.Component {
 
     this.setState({traces: this.state.traces})
   }
-
-  // showApproximateSurface(event) {
-  //   var alreadyPresent = false;
-  //   var index = null;
-  //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-  //     if ((this.state.traces[this.state.level][i].name.includes("Cluster " + this.state.currCluster + " ") || this.state.traces[this.state.level][i].name.includes("Fault " + this.state.currCluster + " ")) && (!this.state.traces[this.state.level][i].name.includes('highlight'))) {
-  //       index = i;
-  //     }
-  //   }
-  //
-  //   if (index != null) {
-  //     // eslint-disable-next-line
-  //     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-  //       if (this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name + ' highlight') {
-  //         this.state.traces[this.state.level].splice(i, 1);
-  //         i--;
-  //         alreadyPresent = true;
-  //       } else if (this.state.traces[this.state.level][i].mode === 'lines+markers' && this.state.traces[this.state.level][i].name === this.state.traces[this.state.level][index].name) {
-  //         // eslint-disable-next-line
-  //         this.state.traces[this.state.level][i].mode = 'markers';
-  //         i--;
-  //         alreadyPresent = true;
-  //       }
-  //     }
-  //
-  //     if (alreadyPresent) {
-  //       this.state.toggledSurfaces.splice(this.state.toggledSurfaces.indexOf(this.state.traces[this.state.level][index].name), 1); // removes the surface from the list of surfaces shown
-  //     }
-  //
-  //     else { // show the surface
-  //       var x = this.state.traces[this.state.level][index].x;
-  //       var y = this.state.traces[this.state.level][index].y;
-  //       var z = this.state.traces[this.state.level][index].z;
-  //       var colorTemp = this.state.traces[this.state.level][index].marker.color;
-  //
-  //       var points = [[]];
-  //
-  //       // eslint-disable-next-line
-  //       for (var i = 0; i < x.length; i++) {
-  //         points[i] = [];
-  //
-  //         points[i].push(x[i]);
-  //         points[i].push(y[i]);
-  //         points[i].push(z[i]);
-  //       }
-  //
-  //       // console.log(points);
-  //       //
-  //       // for (var i = 0; i < points.length-1; i++) {
-  //       //   for (var j = i+1; j < points.length; j++) {
-  //       //     if (points[i][0] === points[j][0] && points[i][1] === points[j][1] && points[i][2] === points[j][2]) {
-  //       //       points.splice(j, 1);
-  //       //       j--;
-  //       //       console.log(j);
-  //       //     }
-  //       //   }
-  //       // }
-  //
-  //       var triangles = triangulate(points); // triangulate() is imported from a different library
-  //
-  //       if (triangles.length === 0) {
-  //         console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with Lines...");
-  //         // eslint-disable-next-line
-  //         this.state.traces[this.state.level][index].mode = 'lines+markers';
-  //       }
-  //
-  //       else {
-  //         console.log("Drawing Surface over " + this.state.traces[this.state.level][index].name + " with " + triangles.length + " Tetrahedrons...");
-  //         //console.log(this.state.traces[0][0].x);
-  //
-  //         // eslint-disable-next-line
-  //         for (var i = 0; i < triangles.length; i++) {
-  //           var xTemp = [];
-  //           var yTemp = [];
-  //           var zTemp = [];
-  //
-  //           for (var j = 0; j < triangles[i].length; j++) {
-  //             xTemp.push(x[triangles[i][j]]);
-  //             yTemp.push(y[triangles[i][j]]);
-  //             zTemp.push(z[triangles[i][j]]);
-  //           }
-  //
-  //           var trace = {
-  //             type: 'mesh3d',
-  //             x: xTemp,
-  //             y: yTemp,
-  //             z: zTemp,
-  //             i: [0, 0, 0, 1],
-  //             j: [1, 2, 3, 2],
-  //             k: [2, 3, 1, 3],
-  //             // i: [0],
-  //             // j: [1],
-  //             // k: [2],
-  //             facecolor: [
-  //               colorTemp,
-  //               colorTemp,
-  //               colorTemp,
-  //               colorTemp
-  //             ],
-  //             marker: {
-  //               opacity: 1,
-  //             },
-  //             id: this.state.traces[this.state.level][index].id,
-  //             name: this.state.traces[this.state.level][index].name + ' highlight',
-  //
-  //             flatshading: true,
-  //           }
-  //
-  //           this.state.traces[this.state.level].push(trace);
-  //         }
-  //       }
-  //
-  //       this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
-  //       this.state.toggledSurfaces.sort();
-  //
-  //       // this.state.toggledSurfaces.push(this.state.traces[this.state.level][index].name);
-  //       //
-  //       // var newSurface = {
-  //       //   x: this.state.traces[this.state.level][index].x,
-  //       //   y: this.state.traces[this.state.level][index].y,
-  //       //   z: this.state.traces[this.state.level][index].z,
-  //       //   mode: 'markers',
-  //       //   //legendgroup: 'Level ' + idToLvl[i],
-  //       //   marker: {
-  //       //     size: 30,
-  //       //     symbol: 'circle',
-  //       //     color: this.state.traces[this.state.level][index].marker.color,
-  //       //     line: {
-  //       //       color: 'rgb(217, 217, 217)',
-  //       //       width: 0.5
-  //       //     },
-  //       //     opacity: 0.1
-  //       //   },
-  //       //   id: this.state.traces[this.state.level][index].id,
-  //       //   name: this.state.traces[this.state.level][index].name + ' highlight',
-  //       //   type: 'scatter3d',
-  //       //   showlegend: false,
-  //       //   hoverinfo: 'skip',
-  //       // }
-  //       // this.state.traces[this.state.level].push(newSurface);
-  //     }
-  //
-  //     this.setState({traces: this.state.traces});
-  //   }
-  // }
 
   plotClicked(event) { // on plot clicked event
     this.showSurfaceOnClick(event);
@@ -725,7 +645,7 @@ class App extends React.Component {
             i: connectionsT[0],
             j: connectionsT[1],
             k: connectionsT[2],
-            color: currCluster.marker.color,
+            color: currCluster.marker.color[0],
             marker: {
               opacity: 1,
             },
@@ -863,7 +783,7 @@ class App extends React.Component {
             i: connectionsT[0],
             j: connectionsT[1],
             k: connectionsT[2],
-            color: currCluster.marker.color,
+            color: currCluster.marker.color[0],
             marker: {
               opacity: 1,
             },
@@ -876,8 +796,6 @@ class App extends React.Component {
           self.state.traces[self.state.level].push(trace);
           self.state.toggledSurfaces.push(currCluster.name);
           self.state.toggledSurfaces.sort();
-
-          console.timeEnd("3D Mesh Trace");
         } else if (currCluster.name.includes("Fault")) {
           alert("No connections found. Faults are only connected to lower level points.");
         } else {
@@ -933,7 +851,7 @@ class App extends React.Component {
       this.state.traces[this.state.level][i].marker.size = event.target.value
     }
 
-    this.setState({size: event.target.value});
+    this.setState({markerSize: event.target.value});
   }
 
   changeOpacity(event) { // when opacity slider(s) is moved
@@ -1002,6 +920,11 @@ class App extends React.Component {
           this.state.traces[i][j].marker.opacity = event.target.value;
           // eslint-disable-next-line
           this.state.traces[i][j].visible = true;
+
+          for (var k = 0; k < this.state.traces[i][j].marker.color.length; i++) {
+            // eslint-disable-next-line
+            this.state.traces[i][j].marker.color[k] = this.state.traces[i][j].marker.color[0];
+          }
         }
 
         if (this.state.statsTraces[i][j] !== undefined) {
@@ -1026,24 +949,12 @@ class App extends React.Component {
 
     this.setState({toggledSurfaces: []});
     this.setState({opacity: this.state.opacity});
-    this.setState({size: 5});
+    this.setState({markerSize: 5});
     this.setState({level: 0});
   }
 
   render() { // renders the webpage
     if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) { // if all data to plot is present
-      // var data = [];
-      //
-      // for (var i = this.state.level; i < this.state.leveltoId.length; i++) {
-      //   if (this.state.leveltoId[i] !== undefined) {
-      //     for (var j = 0; j < this.state.leveltoId[i].length; j++) {
-      //       if (this.state.traces[this.state.level][this.state.leveltoId[i][j]] !== undefined) {
-      //         data.push(this.state.traces[this.state.level][this.state.leveltoId[i][j]])
-      //       }
-      //     }
-      //   }
-      // }
-
       var traces = this.state.traces;
       var statsTraces = this.state.statsTraces;
       var lvltoId = this.state.leveltoId;
@@ -1106,6 +1017,13 @@ class App extends React.Component {
                   <br/>
                   <br/>
 
+                  Sparsify:
+                  <br/>
+                  <input type="range" min="0" max="1" step="1" value={this.state.sparsified} className="slider" id="myRange" onChange={this.sparsify.bind(this)}/>
+
+                  <br/>
+                  <br/>
+
                   <p style={{margin: 0}}>Show Levels:</p>
                   <ul style={{margin: 0}}>
                     {
@@ -1149,9 +1067,9 @@ class App extends React.Component {
                 <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
                 <div style={{display: this.state.tabs[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
-                  Size: {this.state.size}
+                  Marker Size: {this.state.markerSize}
                   <br/>
-                  <input type="range" min="1" max="20" value={this.state.size} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
+                  <input type="range" min="1" max="20" value={this.state.markerSize} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>
                   <br/>
                   <br/>
                   {

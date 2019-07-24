@@ -4,7 +4,8 @@
 
 This visualization tool helps understand [sparsified nested dissection](https://arxiv.org/abs/1901.02971) in 3 dimensions.
 
-![Example Image](images/example_spaND.png)
+![Scatter Plot Image](images/scatterplot.png)
+![Line Plot Image](images/lineplot.png)
 
 ***
 

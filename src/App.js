@@ -13,6 +13,8 @@ class App extends React.Component {
       width: 0, //width of the updateWindowDimensions
       height: 0, //height of the window
       traces: [[]], //e.g. traces[level][id] will return the trace at that level and with that id
+      beforeSparsifyTraces: [[]],
+      afterSparsifyTraces: [[]],
       markerSize: 5, //size of the points on the scatterplot
       opacity: [], //e.g. opacity[level] will return opacity of that level
       level: 0, //current slider level
@@ -109,83 +111,6 @@ class App extends React.Component {
                                 self.state.idtoLevel = idToLvl;
 
                                 console.timeEnd("ID to Level Conversion Table");
-                                console.time("Tab Creation");
-
-                                // eslint-disable-next-line
-                                for (var i = 0; i < self.state.leveltoId.length; i++) {
-                                 self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
-                                 self.state.levelTextColor.push("black");
-
-                                 if (i===0) {
-                                   self.state.hiddenPlots.push("block");
-                                 } else {
-                                   self.state.hiddenPlots.push("none");
-                                 }
-                                }
-
-                                console.timeEnd("Tab Creation");
-                                console.time("Initial Plot View");
-
-                                var x = [[[]]]; // holds x coordinate of each point (e.g. x[0][5] gives array of x coordinates at level 0 and id 5)
-                                var y = [[[]]]; // holds y coordinate of each point (e.g. y[0][5] gives array of y coordinates at level 0 and id 5)
-                                var z = [[[]]]; // holds z coordinate of each point (e.g. z[0][5] gives array of z coordinates at level 0 and id 5)
-                                var pointId = [[[]]]; // holds id assigned to each specific point (e.g. pointId[0][5] gives array of ids at level 0 and id 5)
-
-                                // eslint-disable-next-line
-                                for (var i = 0; i < clustering3dData.length; i++) {
-                                  var coordinate = clustering3dData[i];
-                                  if (x[0][coordinate.id] === undefined) {
-                                    x[0][coordinate.id] = [];
-                                    y[0][coordinate.id] = [];
-                                    z[0][coordinate.id] = [];
-                                    pointId[0][coordinate.id] = [];
-                                  }
-
-                                  // adds new points at index 'id'
-                                  x[0][coordinate.id].push(Number(coordinate.x));
-                                  y[0][coordinate.id].push(Number(coordinate.y));
-                                  z[0][coordinate.id].push(Number(coordinate.z));
-                                  pointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
-                                }
-
-                                console.timeEnd("Initial Plot View");
-                                console.time("All Plot Views");
-
-                                //eslint-disable-next-line
-                                for (var i = 1; i < lvlToId.length; i++) {
-                                  for (var j = x[i-1].length-1; j >= 0; j--) {
-                                    if (x[i] === undefined) {
-                                      x[i] = [[]];
-                                      y[i] = [[]];
-                                      z[i] = [[]];
-                                      pointId[i] = [[]];
-                                    }
-
-                                    if (i !== 1) {
-                                      if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
-                                        if (x[i][self.state.childToParent[j]] === undefined) {
-                                          x[i][self.state.childToParent[j]] = [];
-                                          y[i][self.state.childToParent[j]] = [];
-                                          z[i][self.state.childToParent[j]] = [];
-                                          pointId[i][self.state.childToParent[j]] = [];
-                                        }
-
-                                        // pushes new clusters before merging
-                                        x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
-                                        y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
-                                        z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
-                                        pointId[i][self.state.childToParent[j]].push.apply(pointId[i][self.state.childToParent[j]], pointId[i-1][j]);
-                                      }
-                                    } else {
-                                      x[1] = x[0];
-                                      y[1] = y[0];
-                                      z[1] = z[0];
-                                      pointId[1] = pointId[0];
-                                    }
-                                  }
-                                }
-
-                                console.timeEnd("All Plot Views");
                                 console.time("Stats Data");
 
                                 var stats = [[]];
@@ -215,17 +140,256 @@ class App extends React.Component {
                                 self.state.size = size;
 
                                 console.timeEnd("Stats Data");
+                                console.time("Tab Creation");
+
+                                // eslint-disable-next-line
+                                for (var i = 0; i < self.state.leveltoId.length; i++) {
+                                 self.state.opacity.push(0.8); // sets opacity to 0.8 for every subplot
+                                 self.state.levelTextColor.push("black");
+
+                                 if (i===0) {
+                                   self.state.hiddenPlots.push("block");
+                                 } else {
+                                   self.state.hiddenPlots.push("none");
+                                 }
+                                }
+
+                                console.timeEnd("Tab Creation");
+                                console.time("Initial Plot View");
+
+                                var x = [[[]]]; // holds x coordinate of each point (e.g. x[0][5] gives array of x coordinates at level 0 and id 5)
+                                var y = [[[]]]; // holds y coordinate of each point (e.g. y[0][5] gives array of y coordinates at level 0 and id 5)
+                                var z = [[[]]]; // holds z coordinate of each point (e.g. z[0][5] gives array of z coordinates at level 0 and id 5)
+
+                                var beforeSparsifyX = [[[]]];
+                                var beforeSparsifyY = [[[]]];
+                                var beforeSparsifyZ = [[[]]];
+
+                                var afterSparsifyX = [[[]]];
+                                var afterSparsifyY = [[[]]];
+                                var afterSparsifyZ = [[[]]];
+
+                                var pointId = [[[]]]; // holds id assigned to each specific point (e.g. pointId[0][5] gives array of ids at level 0 and id 5)
+                                var beforeSparsifyPointId = [[[]]];
+                                var afterSparsifyPointId = [[[]]];
+
+                                // eslint-disable-next-line
+                                for (var i = 0; i < clustering3dData.length; i++) {
+                                  var coordinate = clustering3dData[i];
+                                  if (x[0][coordinate.id] === undefined) {
+                                    x[0][coordinate.id] = [];
+                                    y[0][coordinate.id] = [];
+                                    z[0][coordinate.id] = [];
+
+                                    beforeSparsifyX[0][coordinate.id] = [];
+                                    beforeSparsifyY[0][coordinate.id] = [];
+                                    beforeSparsifyZ[0][coordinate.id] = [];
+
+                                    pointId[0][coordinate.id] = [];
+                                    beforeSparsifyPointId[0][coordinate.id] = [];
+                                    afterSparsifyPointId[0][coordinate.id] = [];
+                                  }
+
+                                  // adds new points at index 'id'
+                                  x[0][coordinate.id].push(Number(coordinate.x));
+                                  y[0][coordinate.id].push(Number(coordinate.y));
+                                  z[0][coordinate.id].push(Number(coordinate.z));
+
+                                  beforeSparsifyX[0][coordinate.id].push(Number(coordinate.x));
+                                  beforeSparsifyY[0][coordinate.id].push(Number(coordinate.y));
+                                  beforeSparsifyZ[0][coordinate.id].push(Number(coordinate.z));
+
+                                  pointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
+                                  beforeSparsifyPointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
+                                }
+
+                                for (var i = 0; i < beforeSparsifyX[0].length; i++) {
+                                  afterSparsifyX[0][i] = [];
+                                  afterSparsifyY[0][i] = [];
+                                  afterSparsifyZ[0][i] = [];
+
+                                  if (rank[i] !== size[i]) {
+                                    var randNums = [];
+                                    for (var j = 0; j < rank[i]; j++) {
+                                      var exists = true;
+                                      var random;
+
+                                      while(exists) {
+                                        random = (Math.random()*(beforeSparsifyX[0][i].length-1)+1) | 0;
+                                        if (!randNums.includes(random) && beforeSparsifyX[0][i][random] !== undefined && beforeSparsifyX[0][i][random] !== null) {
+                                          exists = false;
+                                        }
+                                      }
+
+                                      afterSparsifyX[0][i][j] = beforeSparsifyX[0][i][random];
+                                      afterSparsifyY[0][i][j] = beforeSparsifyY[0][i][random];
+                                      afterSparsifyZ[0][i][j] = beforeSparsifyZ[0][i][random];
+
+                                      afterSparsifyPointId[0][i][j] = beforeSparsifyPointId[0][i][random];
+
+                                      randNums.push(random);
+                                    }
+                                  } else {
+                                    for (var j = 0; j < beforeSparsifyX[0][i].length; j++) {
+                                      afterSparsifyX[0][i][j] = beforeSparsifyX[0][i][j];
+                                      afterSparsifyY[0][i][j] = beforeSparsifyY[0][i][j];
+                                      afterSparsifyZ[0][i][j] = beforeSparsifyZ[0][i][j];
+
+                                      afterSparsifyPointId[0][i][j] = beforeSparsifyPointId[0][i][j];
+                                    }
+                                  }
+
+                                  // console.log(i + ", " + rank[i] + ", " + afterSparsifyX[0][i].length);
+                                  // console.log(afterSparsifyX[0][i]);
+                                }
+
+
+
+                                console.timeEnd("Initial Plot View");
+                                console.time("All Plot Views");
+
+                                // console.log(x[0]);
+                                // console.log(beforeSparsifyX[0]);
+                                // console.log(afterSparsifyX[0]);
+
+                                //eslint-disable-next-line
+                                for (var i = 1; i < lvlToId.length; i++) {
+                                  if (i !== 1) {
+                                    if (x[i] === undefined) {
+                                      x[i] = [[]];
+                                      y[i] = [[]];
+                                      z[i] = [[]];
+
+                                      beforeSparsifyX[i] = [[]];
+                                      beforeSparsifyY[i] = [[]];
+                                      beforeSparsifyZ[i] = [[]];
+
+                                      afterSparsifyX[i] = [[]];
+                                      afterSparsifyY[i] = [[]];
+                                      afterSparsifyZ[i] = [[]];
+
+                                      pointId[i] = [[]];
+                                      beforeSparsifyPointId[i] = [[]];
+                                      afterSparsifyPointId[i] = [[]];
+                                    }
+
+                                    for (var j = x[i-1].length-1; j >= 0; j--) {
+                                      if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
+                                        if (x[i][self.state.childToParent[j]] === undefined) {
+                                          x[i][self.state.childToParent[j]] = [];
+                                          y[i][self.state.childToParent[j]] = [];
+                                          z[i][self.state.childToParent[j]] = [];
+
+                                          beforeSparsifyX[i][self.state.childToParent[j]] = [];
+                                          beforeSparsifyY[i][self.state.childToParent[j]] = [];
+                                          beforeSparsifyZ[i][self.state.childToParent[j]] = [];
+
+                                          pointId[i][self.state.childToParent[j]] = [];
+                                          beforeSparsifyPointId[i][self.state.childToParent[j]] = [];
+                                        }
+
+                                        // pushes new clusters before merging
+                                        x[i][self.state.childToParent[j]].push.apply(x[i][self.state.childToParent[j]], x[i-1][j]);
+                                        y[i][self.state.childToParent[j]].push.apply(y[i][self.state.childToParent[j]], y[i-1][j]);
+                                        z[i][self.state.childToParent[j]].push.apply(z[i][self.state.childToParent[j]], z[i-1][j]);
+
+                                        beforeSparsifyX[i][self.state.childToParent[j]].push.apply(beforeSparsifyX[i][self.state.childToParent[j]], afterSparsifyX[i-1][j]);
+                                        beforeSparsifyY[i][self.state.childToParent[j]].push.apply(beforeSparsifyY[i][self.state.childToParent[j]], afterSparsifyY[i-1][j]);
+                                        beforeSparsifyZ[i][self.state.childToParent[j]].push.apply(beforeSparsifyZ[i][self.state.childToParent[j]], afterSparsifyZ[i-1][j]);
+
+                                        pointId[i][self.state.childToParent[j]].push.apply(pointId[i][self.state.childToParent[j]], pointId[i-1][j]);
+                                        beforeSparsifyPointId[i][self.state.childToParent[j]].push.apply(beforeSparsifyPointId[i][self.state.childToParent[j]], afterSparsifyPointId[i-1][j]);
+                                      }
+                                    }
+
+                                    // console.log(beforeSparsifyX[i]);
+                                    for (var j = 0; j < beforeSparsifyX[i].length; j++) {
+                                      if (beforeSparsifyX[i][j] !== undefined && beforeSparsifyX[i][j].length !== 0) {
+                                        afterSparsifyX[i][j] = [];
+                                        afterSparsifyY[i][j] = [];
+                                        afterSparsifyZ[i][j] = [];
+
+                                        afterSparsifyPointId[i][j] = [];
+
+                                        if (rank[j] !== size[j]) {
+                                          var randNums = [];
+                                          // console.log(beforeSparsifyX[i][j].length);
+                                          // console.log(rank[j]);
+                                          // console.log(size[j]);
+                                          for (var k = 0; k < rank[j]; k++) {
+                                            var exists = true;
+                                            var random;
+
+                                            while(exists) {
+                                              random = (Math.random()*(beforeSparsifyX[i][j].length-1)+1) | 0;
+                                              if (!randNums.includes(random) && beforeSparsifyX[i][j][random] !== undefined && beforeSparsifyX[i][j][random] !== null) {
+                                                exists = false;
+                                              }
+                                            }
+
+                                            afterSparsifyX[i][j][k] = beforeSparsifyX[i][j][random];
+                                            afterSparsifyY[i][j][k] = beforeSparsifyY[i][j][random];
+                                            afterSparsifyZ[i][j][k] = beforeSparsifyZ[i][j][random];
+
+                                            afterSparsifyPointId[i][j][k] = beforeSparsifyPointId[i][j][random];
+                                            //console.log(afterSparsifyX[i][j]);
+                                            randNums.push(random);
+                                            //console.log(randNums);
+                                          }
+
+                                          // console.log(i + " " + j);
+                                          // console.log(afterSparsifyX[i][j]);
+                                        } else {
+                                          for (var k = 0; k < beforeSparsifyX[i][j].length; k++) {
+                                            afterSparsifyX[i][j][k] = beforeSparsifyX[i][j][k];
+                                            afterSparsifyY[i][j][k] = beforeSparsifyY[i][j][k];
+                                            afterSparsifyZ[i][j][k] = beforeSparsifyZ[i][j][k];
+
+                                            afterSparsifyPointId[i][j][k] = beforeSparsifyPointId[i][j][k];
+                                          }
+                                        }
+                                      }
+                                    }
+                                  } else {
+                                    x[1] = x[0];
+                                    y[1] = y[0];
+                                    z[1] = z[0];
+
+                                    beforeSparsifyX[1] = beforeSparsifyX[0];
+                                    beforeSparsifyY[1] = beforeSparsifyY[0];
+                                    beforeSparsifyZ[1] = beforeSparsifyZ[0];
+
+                                    afterSparsifyX[1] = afterSparsifyX[0];
+                                    afterSparsifyY[1] = afterSparsifyY[0];
+                                    afterSparsifyZ[1] = afterSparsifyZ[0];
+
+                                    pointId[1] = pointId[0];
+                                    beforeSparsifyPointId[1] = beforeSparsifyPointId[0];
+                                    afterSparsifyPointId[1] = afterSparsifyPointId[0];
+                                  }
+
+                                  // console.log(afterSparsifyX[i]);
+                                }
+
+                                // console.log(beforeSparsifyX);
+                                // console.log(beforeSparsifyY);
+                                // console.log(beforeSparsifyZ);
+                                // console.log(afterSparsifyX);
+                                // console.log(afterSparsifyY);
+                                // console.log(afterSparsifyZ);
+
+                                console.timeEnd("All Plot Views");
                                 console.time("Plot Traces");
 
                                 // eslint-disable-next-line
-                                for (var j = 0; j < x.length; j++) {
+                                for (var i = 0; i < x.length; i++) {
                                   // eslint-disable-next-line
-                                  for (var i = 0; i < x[j].length; i++) {
+                                  for (var j = 0; j < x[i].length; j++) {
                                     var tempName = "";
 
                                     var tempColor = 'rgba(' + Math.round(Math.random()*255) + "," + Math.round(Math.random()*255) + "," + Math.round(Math.random()*255) + ", 1)";
 
-                                    if (name[i].includes("not_fault")) {
+                                    if (name[j].includes("not_fault")) {
                                       tempName = "Cluster"
                                       //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
                                     } else {
@@ -233,61 +397,119 @@ class App extends React.Component {
                                       //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                                     }
 
-                                    if (idToLvl[i] >= j && x[j][i] !== undefined && x[j][i] !== [] && x[j][i].length !== 0) {
-                                      var colorArray = [];
-                                      for (var k = 0; k < x[j][i].length; k++) {
-                                        colorArray.push(tempColor);
+                                    if (idToLvl[j] >= i) {
+                                      if (x[i][j] !== undefined && x[i][j] !== [] && x[i][j].length !== 0) {
+                                        var trace = { // each trace is one cluster
+                                          x: x[i][j], y: y[i][j], z: z[i][j], // provides array of x,y,z coordinates for the points in each cluster
+                                          mode: 'markers',
+                                          //legendgroup: 'Level ' + idToLvl[i],
+                                          marker: {
+                                            size: self.state.markerSize,
+                                            symbol: 'circle',
+                                            color: tempColor,
+                                            line: {
+                                              color: 'rgb(217, 217, 217)',
+                                              width: 0.5
+                                            },
+                                            opacity: self.state.opacity
+                                          },
+                                          type: 'scatter3d',
+                                          id: idToLvl[j],
+                                          pointIds: pointId[i][j],
+                                          cluster: j,
+                                          name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
+                                        };
+
+                                        if (self.state.traces[i] === undefined) {
+                                          self.state.traces[i] = [];
+                                        }
+
+                                        self.state.traces[i].push(trace);
                                       }
 
-                                      var trace = { // each trace is one cluster
-                                        x: x[j][i], y: y[j][i], z: z[j][i], // provides array of x,y,z coordinates for the points in each cluster
-                                        mode: 'markers',
-                                        //legendgroup: 'Level ' + idToLvl[i],
-                                        marker: {
-                                          size: self.state.markerSize,
-                                          symbol: 'circle',
-                                          color: colorArray,
-                                          line: {
-                                            color: 'rgb(217, 217, 217)',
-                                            width: 0.5
+                                      if (beforeSparsifyX[i][j] !== undefined && beforeSparsifyX[i][j] !== [] && beforeSparsifyX[i][j].length !== 0) {
+                                        var beforeSparsifyTrace = {
+                                          x: beforeSparsifyX[i][j], y: beforeSparsifyY[i][j], z: beforeSparsifyZ[i][j], // provides array of x,y,z coordinates for the points in each cluster
+                                          mode: 'markers',
+                                          //legendgroup: 'Level ' + idToLvl[i],
+                                          marker: {
+                                            size: self.state.markerSize,
+                                            symbol: 'circle',
+                                            color: tempColor,
+                                            line: {
+                                              color: 'rgb(217, 217, 217)',
+                                              width: 0.5
+                                            },
+                                            opacity: self.state.opacity
                                           },
-                                          opacity: self.state.opacity
-                                        },
-                                        type: 'scatter3d',
-                                        id: idToLvl[i],
-                                        pointIds: pointId[j][i],
-                                        cluster: i,
-                                        name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')', // e.g Cluster 5 (Level 0)
-                                      };
+                                          type: 'scatter3d',
+                                          id: idToLvl[j],
+                                          pointIds: beforeSparsifyPointId[i][j],
+                                          cluster: j,
+                                          name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
+                                        };
 
-                                      if (stats[i] !== undefined) {
+                                        if (self.state.beforeSparsifyTraces[i] === undefined) {
+                                          self.state.beforeSparsifyTraces[i] = [];
+                                        }
+
+                                        self.state.beforeSparsifyTraces[i].push(beforeSparsifyTrace);
+                                      }
+
+                                      if (afterSparsifyX[i][j] !== undefined && afterSparsifyX[i][j] !== [] && afterSparsifyX[i][j].length !== 0) {
+                                        var afterSparsifyTrace = {
+                                          x: afterSparsifyX[i][j], y: afterSparsifyY[i][j], z: afterSparsifyZ[i][j], // provides array of x,y,z coordinates for the points in each cluster
+                                          mode: 'markers',
+                                          //legendgroup: 'Level ' + idToLvl[i],
+                                          marker: {
+                                            size: self.state.markerSize,
+                                            symbol: 'circle',
+                                            color: tempColor,
+                                            line: {
+                                              color: 'rgb(217, 217, 217)',
+                                              width: 0.5
+                                            },
+                                            opacity: self.state.opacity
+                                          },
+                                          type: 'scatter3d',
+                                          id: idToLvl[j],
+                                          pointIds: afterSparsifyPointId[i][j],
+                                          cluster: j,
+                                          name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
+                                        };
+
+                                        if (self.state.afterSparsifyTraces[i] === undefined) {
+                                          self.state.afterSparsifyTraces[i] = [];
+                                        }
+
+                                        self.state.afterSparsifyTraces[i].push(afterSparsifyTrace);
+                                      }
+
+                                      if (stats[j] !== undefined) {
                                         var statsTrace = {
-                                          x: Array.apply(null, {length: stats[i].length}).map(Number.call, Number),
-                                          y: stats[i],
+                                          x: Array.apply(null, {length: stats[j].length}).map(Number.call, Number),
+                                          y: stats[j],
                                           line: {
                                             color: tempColor,
                                           },
-                                          name: tempName + ' ' + i + ' (Level ' + idToLvl[i] + ')', // e.g Cluster 5 (Level 0)
-                                          id: idToLvl[i],
+                                          name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
+                                          id: idToLvl[j],
                                           mode: 'lines',
                                         }
 
-                                        if (self.state.statsTraces[j] === undefined) {
-                                          self.state.statsTraces[j] = [];
+                                        if (self.state.statsTraces[i] === undefined) {
+                                          self.state.statsTraces[i] = [];
                                         }
 
-                                        self.state.statsTraces[j].push(statsTrace);
+                                        self.state.statsTraces[i].push(statsTrace);
                                       }
-
-
-                                      if (self.state.traces[j] === undefined) {
-                                        self.state.traces[j] = [];
-                                      }
-
-                                      self.state.traces[j].push(trace);
                                     }
                                   }
                                 }
+
+                                // console.log(self.state.traces);
+                                // console.log(self.state.beforeSparsifyTraces);
+                                // console.log(self.state.afterSparsifyTraces);
 
                                 console.timeEnd("Plot Traces");
                                 console.time("Adjacency List");
@@ -403,89 +625,74 @@ class App extends React.Component {
       }
     }
 
-    // eslint-disable-next-line
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      var currCluster = this.state.traces[this.state.level][i];
-      var color = currCluster.marker.color[0];
-
-      currCluster.marker.size = 5;
-
-      var tempColors = [];
-      // eslint-disable-next-line
-      for (var j = 0; j < currCluster.x.length; j++) {
-        tempColors[j] = color;
-      }
-
-      currCluster.marker.color = tempColors;
-    }
-
-    this.setState({sparsified: 0});
     this.setState({level: event.target.value});
   }
 
-  sparsify() {
-    if (this.state.sparsified === 0) {
-      var rank = this.state.rank;
-      var size = this.state.size;
-
-      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-        var currCluster = this.state.traces[this.state.level][i];
-
-        if (rank[currCluster.cluster] !== size[currCluster.cluster]) {
-          //currCluster.marker.size = 5;
-
-          var length = currCluster.x.length;
-          var color = currCluster.marker.color[0];
-          //console.log(length);
-          var randNums = [];
-          var tempColors = [];
-
-          for (var j = 0; j < currCluster.x.length; j++) {
-            tempColors[j] = color;
-          }
-
-          // eslint-disable-next-line
-          for (var j = 0; j < currCluster.x.length - rank[currCluster.cluster]; j++) {
-            var exists = true;
-            var random;
-            while(exists) {
-              random = (Math.random()*(length-1)+1) | 0;
-              if (!randNums.includes(random)) {
-                exists = false;
-              }
-            }
-
-            tempColors[random] = 'rgba(0,0,0,0)';
-            randNums.push(random);
-          }
-
-          currCluster.marker.color = tempColors;
-        }
-      }
-
-      this.setState({sparsified: 1})
-    } else {
-      // eslint-disable-next-line
-      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-        // eslint-disable-next-line
-        var currCluster = this.state.traces[this.state.level][i];
-        // eslint-disable-next-line
-        var color = currCluster.marker.color[0];
-
-        currCluster.marker.size = 5;
-
-        // eslint-disable-next-line
-        var tempColors = [];
-        // eslint-disable-next-line
-        for (var j = 0; j < currCluster.x.length; j++) {
-          tempColors[j] = color;
-        }
-
-        currCluster.marker.color = tempColors;
-      }
-
-      this.setState({sparsified: 0});
-    }
+  sparsify(event) {
+    //alert(this.state.sparsified)
+    this.setState({sparsified: Number(event.target.value)})
+    // if (this.state.sparsified === 0) {
+    //   var rank = this.state.rank;
+    //   var size = this.state.size;
+    //
+    //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+    //     var currCluster = this.state.traces[this.state.level][i];
+    //
+    //     if (rank[currCluster.cluster] !== size[currCluster.cluster]) {
+    //       //currCluster.marker.size = 5;
+    //
+    //       var length = currCluster.x.length;
+    //       var color = currCluster.marker.color[0];
+    //       //console.log(length);
+    //       var randNums = [];
+    //       var tempColors = [];
+    //
+    //       for (var j = 0; j < currCluster.x.length; j++) {
+    //         tempColors[j] = color;
+    //       }
+    //
+    //       // eslint-disable-next-line
+    //       for (var j = 0; j < currCluster.x.length - rank[currCluster.cluster]; j++) {
+    //         var exists = true;
+    //         var random;
+    //         while(exists) {
+    //           random = (Math.random()*(length-1)+1) | 0;
+    //           if (!randNums.includes(random)) {
+    //             exists = false;
+    //           }
+    //         }
+    //
+    //         tempColors[random] = 'rgba(0,0,0,0)';
+    //         randNums.push(random);
+    //       }
+    //
+    //       currCluster.marker.color = tempColors;
+    //     }
+    //   }
+    //
+    //   this.setState({sparsified: 1})
+    // } else {
+    //   // eslint-disable-next-line
+    //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+    //     // eslint-disable-next-line
+    //     var currCluster = this.state.traces[this.state.level][i];
+    //     // eslint-disable-next-line
+    //     var color = currCluster.marker.color[0];
+    //
+    //     currCluster.marker.size = 5;
+    //
+    //     // eslint-disable-next-line
+    //     var tempColors = [];
+    //     // eslint-disable-next-line
+    //     for (var j = 0; j < currCluster.x.length; j++) {
+    //       tempColors[j] = color;
+    //     }
+    //
+    //     currCluster.marker.color = tempColors;
+    //   }
+    //
+    //   this.setState({sparsified: 0});
+    // }
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -645,7 +852,7 @@ class App extends React.Component {
             i: connectionsT[0],
             j: connectionsT[1],
             k: connectionsT[2],
-            color: currCluster.marker.color[0],
+            color: currCluster.marker.color,
             marker: {
               opacity: 1,
             },
@@ -920,11 +1127,6 @@ class App extends React.Component {
           this.state.traces[i][j].marker.opacity = event.target.value;
           // eslint-disable-next-line
           this.state.traces[i][j].visible = true;
-
-          for (var k = 0; k < this.state.traces[i][j].marker.color.length; i++) {
-            // eslint-disable-next-line
-            this.state.traces[i][j].marker.color[k] = this.state.traces[i][j].marker.color[0];
-          }
         }
 
         if (this.state.statsTraces[i][j] !== undefined) {
@@ -959,12 +1161,35 @@ class App extends React.Component {
       var statsTraces = this.state.statsTraces;
       var lvltoId = this.state.leveltoId;
 
+      var data;
+      var currentSparsification;
+
+      if (this.state.sparsified === 0) {
+        data = this.state.traces;
+        currentSparsification = "All Data";
+      } else if (this.state.sparsified === 1) {
+        data = this.state.beforeSparsifyTraces;
+        currentSparsification = "Before Sparsification";
+      } else {
+        data = this.state.afterSparsifyTraces;
+        currentSparsification = "After Sparsification";
+      }
+
+      // for (var i = 0; i < tempData.length; i++) {
+      //   data[i] = [];
+      //   for (var j = 0; j < tempData[i].length; j++) {
+      //     data[i][j] = tempData[i][j]
+      //   }
+      // }
+
+      // console.log(data);
+
       return ( // code below is in JSX
         <div>
           <h1 id="title" style={{textAlign: "center", fontFamily: "Trebuchet MS"}}>spaND Visualization</h1>
           <div style={{height: (this.state.height)/10*9}}>
             {
-              traces.map((currLevelTrace, index) =>
+              data.map((currLevelTrace, index) =>
                 <div key={index} style={{display: this.state.hiddenPlots[index]}}>
                   <Plot
                     data={currLevelTrace}
@@ -1017,9 +1242,9 @@ class App extends React.Component {
                   <br/>
                   <br/>
 
-                  Sparsify:
+                  Sparsify: {currentSparsification}
                   <br/>
-                  <input type="range" min="0" max="1" step="1" value={this.state.sparsified} className="slider" id="myRange" onChange={this.sparsify.bind(this)}/>
+                  <input type="range" min="0" max="2" step="1" value={this.state.sparsified} className="slider" id="myRange" onChange={this.sparsify.bind(this)}/>
 
                   <br/>
                   <br/>

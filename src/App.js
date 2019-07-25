@@ -203,6 +203,7 @@ class App extends React.Component {
                                   beforeSparsifyPointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
                                 }
 
+                                // eslint-disable-next-line
                                 for (var i = 0; i < beforeSparsifyX[0].length; i++) {
                                   afterSparsifyX[0][i] = [];
                                   afterSparsifyY[0][i] = [];
@@ -210,6 +211,7 @@ class App extends React.Component {
 
                                   if (rank[i] !== size[i]) {
                                     var randNums = [];
+                                    // eslint-disable-next-line
                                     for (var j = 0; j < rank[i]; j++) {
                                       var exists = true;
                                       var random;
@@ -230,6 +232,7 @@ class App extends React.Component {
                                       randNums.push(random);
                                     }
                                   } else {
+                                    // eslint-disable-next-line
                                     for (var j = 0; j < beforeSparsifyX[0][i].length; j++) {
                                       afterSparsifyX[0][i][j] = beforeSparsifyX[0][i][j];
                                       afterSparsifyY[0][i][j] = beforeSparsifyY[0][i][j];
@@ -273,6 +276,7 @@ class App extends React.Component {
                                       afterSparsifyPointId[i] = [[]];
                                     }
 
+                                    // eslint-disable-next-line
                                     for (var j = x[i-1].length-1; j >= 0; j--) {
                                       if (self.state.childToParent[j] !== undefined && self.state.childToParent[j] !== null && self.state.childToParent[j] !== []) {
                                         if (x[i][self.state.childToParent[j]] === undefined) {
@@ -302,7 +306,7 @@ class App extends React.Component {
                                       }
                                     }
 
-                                    // console.log(beforeSparsifyX[i]);
+                                    // eslint-disable-next-line
                                     for (var j = 0; j < beforeSparsifyX[i].length; j++) {
                                       if (beforeSparsifyX[i][j] !== undefined && beforeSparsifyX[i][j].length !== 0) {
                                         afterSparsifyX[i][j] = [];
@@ -312,12 +316,12 @@ class App extends React.Component {
                                         afterSparsifyPointId[i][j] = [];
 
                                         if (rank[j] !== size[j]) {
+                                          // eslint-disable-next-line
                                           var randNums = [];
-                                          // console.log(beforeSparsifyX[i][j].length);
-                                          // console.log(rank[j]);
-                                          // console.log(size[j]);
                                           for (var k = 0; k < rank[j]; k++) {
+                                            // eslint-disable-next-line
                                             var exists = true;
+                                            // eslint-disable-next-line
                                             var random;
 
                                             while(exists) {
@@ -332,14 +336,10 @@ class App extends React.Component {
                                             afterSparsifyZ[i][j][k] = beforeSparsifyZ[i][j][random];
 
                                             afterSparsifyPointId[i][j][k] = beforeSparsifyPointId[i][j][random];
-                                            //console.log(afterSparsifyX[i][j]);
                                             randNums.push(random);
-                                            //console.log(randNums);
                                           }
-
-                                          // console.log(i + " " + j);
-                                          // console.log(afterSparsifyX[i][j]);
                                         } else {
+                                          // eslint-disable-next-line
                                           for (var k = 0; k < beforeSparsifyX[i][j].length; k++) {
                                             afterSparsifyX[i][j][k] = beforeSparsifyX[i][j][k];
                                             afterSparsifyY[i][j][k] = beforeSparsifyY[i][j][k];
@@ -618,6 +618,20 @@ class App extends React.Component {
           this.state.traces[i][j].visible = true;
         }
 
+        if (this.state.beforeSparsifyTraces[i][j] !== undefined) {
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[i][j].marker.opacity = event.target.value;
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[i][j].visible = true;
+        }
+
+        if (this.state.afterSparsifyTraces[i][j] !== undefined) {
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[i][j].marker.opacity = event.target.value;
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[i][j].visible = true;
+        }
+
         if (this.state.statsTraces[i][j] !== undefined) {
           // eslint-disable-next-line
           this.state.statsTraces[i][j].visible = true;
@@ -629,70 +643,7 @@ class App extends React.Component {
   }
 
   sparsify(event) {
-    //alert(this.state.sparsified)
     this.setState({sparsified: Number(event.target.value)})
-    // if (this.state.sparsified === 0) {
-    //   var rank = this.state.rank;
-    //   var size = this.state.size;
-    //
-    //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-    //     var currCluster = this.state.traces[this.state.level][i];
-    //
-    //     if (rank[currCluster.cluster] !== size[currCluster.cluster]) {
-    //       //currCluster.marker.size = 5;
-    //
-    //       var length = currCluster.x.length;
-    //       var color = currCluster.marker.color[0];
-    //       //console.log(length);
-    //       var randNums = [];
-    //       var tempColors = [];
-    //
-    //       for (var j = 0; j < currCluster.x.length; j++) {
-    //         tempColors[j] = color;
-    //       }
-    //
-    //       // eslint-disable-next-line
-    //       for (var j = 0; j < currCluster.x.length - rank[currCluster.cluster]; j++) {
-    //         var exists = true;
-    //         var random;
-    //         while(exists) {
-    //           random = (Math.random()*(length-1)+1) | 0;
-    //           if (!randNums.includes(random)) {
-    //             exists = false;
-    //           }
-    //         }
-    //
-    //         tempColors[random] = 'rgba(0,0,0,0)';
-    //         randNums.push(random);
-    //       }
-    //
-    //       currCluster.marker.color = tempColors;
-    //     }
-    //   }
-    //
-    //   this.setState({sparsified: 1})
-    // } else {
-    //   // eslint-disable-next-line
-    //   for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-    //     // eslint-disable-next-line
-    //     var currCluster = this.state.traces[this.state.level][i];
-    //     // eslint-disable-next-line
-    //     var color = currCluster.marker.color[0];
-    //
-    //     currCluster.marker.size = 5;
-    //
-    //     // eslint-disable-next-line
-    //     var tempColors = [];
-    //     // eslint-disable-next-line
-    //     for (var j = 0; j < currCluster.x.length; j++) {
-    //       tempColors[j] = color;
-    //     }
-    //
-    //     currCluster.marker.color = tempColors;
-    //   }
-    //
-    //   this.setState({sparsified: 0});
-    // }
   }
 
   toggleLevel(event) { //whether the level is shown or not
@@ -706,6 +657,28 @@ class App extends React.Component {
         } else { // else hide the level
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].visible = false;
+        }
+      }
+
+      if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i].id[0] === event.target.id) {
+        changed = true;
+        if (this.state.beforeSparsifyTraces[this.state.level][i].visible === false) { // if not visible, make the level visible
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[this.state.level][i].visible = true;
+        } else { // else hide the level
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[this.state.level][i].visible = false;
+        }
+      }
+
+      if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i].id[0] === event.target.id) {
+        changed = true;
+        if (this.state.afterSparsifyTraces[this.state.level][i].visible === false) { // if not visible, make the level visible
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[this.state.level][i].visible = true;
+        } else { // else hide the level
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[this.state.level][i].visible = false;
         }
       }
 
@@ -736,13 +709,6 @@ class App extends React.Component {
 
   plotClicked(event) { // on plot clicked event
     this.showSurfaceOnClick(event);
-    // if (event.points[0].data.name.includes('highlight')) {
-    //   var name = event.points[0].data.name;
-    //   var lastIndex = name.lastIndexOf(" ")
-    //   alert("Removing Surface over " + name.substring(0, lastIndex));
-    // } else {
-    //   alert("Drawing Surface over " + event.points[0].data.name);
-    // }
   }
 
   updateCurrCluster(event) { // changes state variable currCluster when "Show Surface" text field is changed
@@ -1055,7 +1021,17 @@ class App extends React.Component {
   changeSize(event) { // when size slider is moved
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       // eslint-disable-next-line
-      this.state.traces[this.state.level][i].marker.size = event.target.value
+      this.state.traces[this.state.level][i].marker.size = event.target.value;
+
+      if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i] !== null) {
+        // eslint-disable-next-line
+        this.state.beforeSparsifyTraces[this.state.level][i].marker.size = event.target.value;
+      }
+
+      if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i] !== null) {
+        // eslint-disable-next-line
+        this.state.afterSparsifyTraces[this.state.level][i].marker.size = event.target.value;
+      }
     }
 
     this.setState({markerSize: event.target.value});
@@ -1067,6 +1043,16 @@ class App extends React.Component {
         if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].id[0] === event.target.id) {
           // eslint-disable-next-line
           this.state.traces[this.state.level][i].marker.opacity = event.target.value; // sets opacity to the value of the slider
+        }
+
+        if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i].id[0] === event.target.id) {
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[this.state.level][i].marker.opacity = event.target.value; // sets opacity to the value of the slider
+        }
+
+        if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i].id[0] === event.target.id) {
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[this.state.level][i].marker.opacity = event.target.value; // sets opacity to the value of the slider
         }
       }
 
@@ -1129,6 +1115,20 @@ class App extends React.Component {
           this.state.traces[i][j].visible = true;
         }
 
+        if (this.state.beforeSparsifyTraces[i][j] !== undefined) {
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[i][j].marker.opacity = event.target.value;
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[i][j].visible = true;
+        }
+
+        if (this.state.afterSparsifyTraces[i][j] !== undefined) {
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[i][j].marker.opacity = event.target.value;
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[i][j].visible = true;
+        }
+
         if (this.state.statsTraces[i][j] !== undefined) {
           // eslint-disable-next-line
           this.state.statsTraces[i][j].visible = true;
@@ -1157,7 +1157,6 @@ class App extends React.Component {
 
   render() { // renders the webpage
     if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) { // if all data to plot is present
-      var traces = this.state.traces;
       var statsTraces = this.state.statsTraces;
       var lvltoId = this.state.leveltoId;
 

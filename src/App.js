@@ -430,6 +430,34 @@ class App extends React.Component {
                                         }
 
                                         self.state.traces[i].push(trace);
+
+                                        if (stats[j] !== undefined) {
+                                          var statsX = Array.apply(null, {length: stats[j].length}).map(Number.call, Number);
+
+                                          // eslint-disable-next-line
+                                          // for (var k = 0; k < statsX.length; k++) {
+                                          //   statsX[k]/=(statsX.length-1);
+                                          // }
+
+                                          var statsTrace = {
+                                            x: statsX,
+                                            y: stats[j],
+                                            hoverinfo: 'text',
+                                            hovertext: Array(stats[j].length).fill(tempName + " " + j + "<br>Size: " + size[j]  + "<br>Level: " + idToLvl[j]),
+                                            line: {
+                                              color: tempColor,
+                                            },
+                                            name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
+                                            id: idToLvl[j],
+                                            mode: 'lines',
+                                          }
+
+                                          if (self.state.statsTraces[i] === undefined) {
+                                            self.state.statsTraces[i] = [];
+                                          }
+
+                                          self.state.statsTraces[i].push(statsTrace);
+                                        }
                                       }
 
                                       if (beforeSparsifyX[i][j] !== undefined && beforeSparsifyX[i][j] !== [] && beforeSparsifyX[i][j].length !== 0) {
@@ -488,25 +516,6 @@ class App extends React.Component {
                                         }
 
                                         self.state.afterSparsifyTraces[i].push(afterSparsifyTrace);
-                                      }
-
-                                      if (stats[j] !== undefined) {
-                                        var statsTrace = {
-                                          x: Array.apply(null, {length: stats[j].length}).map(Number.call, Number),
-                                          y: stats[j],
-                                          line: {
-                                            color: tempColor,
-                                          },
-                                          name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
-                                          id: idToLvl[j],
-                                          mode: 'lines',
-                                        }
-
-                                        if (self.state.statsTraces[i] === undefined) {
-                                          self.state.statsTraces[i] = [];
-                                        }
-
-                                        self.state.statsTraces[i].push(statsTrace);
                                       }
                                     }
                                   }
@@ -961,7 +970,7 @@ class App extends React.Component {
             i: connectionsT[0],
             j: connectionsT[1],
             k: connectionsT[2],
-            color: currCluster.marker.color[0],
+            color: currCluster.marker.color,
             marker: {
               opacity: 1,
             },
@@ -1154,6 +1163,7 @@ class App extends React.Component {
     // eslint-disable-next-line
     this.state.hiddenPlots[0] = 'block';
 
+    this.setState({sparsified: 0});
     this.setState({toggledSurfaces: []});
     this.setState({opacity: this.state.opacity});
     this.setState({markerSize: 5});

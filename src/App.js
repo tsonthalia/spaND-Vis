@@ -1,8 +1,13 @@
 // Visualization Model created by Tanay Sonthalia
 
 import React from 'react';
-import Plot from 'react-plotly.js';
+// import Plot from 'react-plotly.js';
 import * as d3 from 'd3';
+
+import Plotly from 'plotly.js-gl3d-dist';
+import createPlotlyComponent from "react-plotly.js/factory";
+
+const Plot = createPlotlyComponent(Plotly);
 
 class App extends React.Component {
   constructor(props) {

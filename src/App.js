@@ -1,12 +1,10 @@
 // Visualization Model created by Tanay Sonthalia
 
 import React from 'react';
-// import Plot from 'react-plotly.js';
 import * as d3 from 'd3';
 
 import Plotly from 'plotly.js-gl3d-dist';
 import createPlotlyComponent from "react-plotly.js/factory";
-
 const Plot = createPlotlyComponent(Plotly);
 
 class App extends React.Component {
@@ -26,9 +24,6 @@ class App extends React.Component {
       leveltoId: [[]], //e.g. leveltoId[level] will return an array of ids at that level
       idtoLevel: [], //e.g. idtoLevel[id] will return the level with that id
       childToParent: [], //e.g. childToParent[child] will return that child cluster's corresponding parent cluster
-      // x: [[[]]], //e.g. x[level][id] will return an array of x values at that level on the slider with that id
-      // y: [[[]]], //e.g. y[level][id] will return an array of y values at that level on the slider with that id
-      // z: [[[]]], //e.g. z[level][id] will return an array of z values at that level on the slider with that id
       levelTextColor: [], //color of each level in the "Show Levels" section (black = level is currently shown, gray = level is currently hidden)
       hiddenPlots: [], //which plot is currently being used (which level on the this.state.traces variable)
       currCluster: 0, //cluster that has been inputted into the textfield to show surfaces
@@ -162,21 +157,21 @@ class App extends React.Component {
                                 console.timeEnd("Tab Creation");
                                 console.time("Initial Plot View");
 
-                                var x = [[[]]]; // holds x coordinate of each point (e.g. x[0][5] gives array of x coordinates at level 0 and id 5)
-                                var y = [[[]]]; // holds y coordinate of each point (e.g. y[0][5] gives array of y coordinates at level 0 and id 5)
-                                var z = [[[]]]; // holds z coordinate of each point (e.g. z[0][5] gives array of z coordinates at level 0 and id 5)
+                                var x = [[[]]]; // holds x coordinate of each point with all data (e.g. x[0][5] gives array of x coordinates at level 0 and id 5)
+                                var y = [[[]]]; // holds y coordinate of each point with all data (e.g. y[0][5] gives array of y coordinates at level 0 and id 5)
+                                var z = [[[]]]; // holds z coordinate of each point with all data (e.g. z[0][5] gives array of z coordinates at level 0 and id 5)
 
-                                var beforeSparsifyX = [[[]]];
-                                var beforeSparsifyY = [[[]]];
-                                var beforeSparsifyZ = [[[]]];
+                                var beforeSparsifyX = [[[]]]; // holds x coordinate of each point before sparsification (e.g. beforeSparsifyX[0][5] gives array of x coordinates at level 0 and id 5)
+                                var beforeSparsifyY = [[[]]]; // holds y coordinate of each point before sparsification (e.g. beforeSparsifyY[0][5] gives array of y coordinates at level 0 and id 5)
+                                var beforeSparsifyZ = [[[]]]; // holds z coordinate of each point before sparsification (e.g. beforeSparsifyZ[0][5] gives array of z coordinates at level 0 and id 5)
 
-                                var afterSparsifyX = [[[]]];
-                                var afterSparsifyY = [[[]]];
-                                var afterSparsifyZ = [[[]]];
+                                var afterSparsifyX = [[[]]]; // holds x coordinate of each point after sparsification (e.g. afterSparsifyX[0][5] gives array of x coordinates at level 0 and id 5)
+                                var afterSparsifyY = [[[]]]; // holds y coordinate of each point after sparsification (e.g. afterSparsifyY[0][5] gives array of y coordinates at level 0 and id 5)
+                                var afterSparsifyZ = [[[]]]; // holds z coordinate of each point after sparsification (e.g. afterSparsifyZ[0][5] gives array of z coordinates at level 0 and id 5)
 
-                                var pointId = [[[]]]; // holds id assigned to each specific point (e.g. pointId[0][5] gives array of ids at level 0 and id 5)
-                                var beforeSparsifyPointId = [[[]]];
-                                var afterSparsifyPointId = [[[]]];
+                                var pointId = [[[]]]; // holds id assigned to each specific point with all data (e.g. pointId[0][5] gives array of ids at level 0 and id 5)
+                                var beforeSparsifyPointId = [[[]]]; // holds id assigned to each specific point before sparsification (e.g. beforeSparsifyPointId[0][5] gives array of ids at level 0 and id 5)
+                                var afterSparsifyPointId = [[[]]]; // holds id assigned to each specific point after sparsification (e.g. afterSparsifyPointId[0][5] gives array of ids at level 0 and id 5)
 
                                 // eslint-disable-next-line
                                 for (var i = 0; i < clustering3dData.length; i++) {
@@ -204,8 +199,8 @@ class App extends React.Component {
                                   beforeSparsifyY[0][coordinate.id].push(Number(coordinate.y));
                                   beforeSparsifyZ[0][coordinate.id].push(Number(coordinate.z));
 
-                                  pointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
-                                  beforeSparsifyPointId[0][coordinate.id].push(uniqueIdCoordinateData[i].id);
+                                  pointId[0][coordinate.id].push(Number(uniqueIdCoordinateData[i].id));
+                                  beforeSparsifyPointId[0][coordinate.id].push(Number(uniqueIdCoordinateData[i].id));
                                 }
 
                                 // eslint-disable-next-line
@@ -214,27 +209,81 @@ class App extends React.Component {
                                   afterSparsifyY[0][i] = [];
                                   afterSparsifyZ[0][i] = [];
 
-                                  if (rank[i] !== size[i]) {
-                                    var randNums = [];
-                                    // eslint-disable-next-line
-                                    for (var j = 0; j < rank[i]; j++) {
-                                      var exists = true;
-                                      var random;
+                                  if (rank[i] !== size[i]) { // if the rank is less than the size, use the Farthest-First Algorithm to ensure an evenly distributed graph
+                                    // Farthest-First Algorithm Begins
+                                    var random = (Math.random()*(beforeSparsifyX[0][i].length)) | 0; // gets a random num between 0 and the number of points in the cluster
 
-                                      while(exists) {
-                                        random = (Math.random()*(beforeSparsifyX[0][i].length-1)+1) | 0;
-                                        if (!randNums.includes(random) && beforeSparsifyX[0][i][random] !== undefined && beforeSparsifyX[0][i][random] !== null) {
-                                          exists = false;
+                                    var pointsAdded = [random]; // array of points that will be kept after sparsification
+
+                                    var distances = []; // array of distances from the closest point
+                                    distances[random] = undefined;
+
+                                    // eslint-disable-next-line
+                                    for (var j = 1; j < rank[i]; j++) {
+                                      for (var k = 0; k < beforeSparsifyX[0][i].length; k++) {
+                                        if (!pointsAdded.includes(k)) {
+                                          var prevIndex = pointsAdded[j-1];
+                                          var prevX = beforeSparsifyX[0][i][prevIndex];
+                                          var prevY = beforeSparsifyY[0][i][prevIndex];
+                                          var prevZ = beforeSparsifyZ[0][i][prevIndex];
+
+                                          var currX = beforeSparsifyX[0][i][k];
+                                          var currY = beforeSparsifyY[0][i][k];
+                                          var currZ = beforeSparsifyZ[0][i][k];
+
+                                          var newDistance = Math.sqrt(Math.pow(currX-prevX, 2) + Math.pow(currY-prevY, 2) + Math.pow(currZ-prevZ, 2));
+                                          if (distances[k] !== null && distances[k] !== undefined) {
+                                            distances[k] = Math.min(distances[k], newDistance);
+                                          } else {
+                                            distances[k] = newDistance;
+                                          }
                                         }
                                       }
 
-                                      afterSparsifyX[0][i][j] = beforeSparsifyX[0][i][random];
-                                      afterSparsifyY[0][i][j] = beforeSparsifyY[0][i][random];
-                                      afterSparsifyZ[0][i][j] = beforeSparsifyZ[0][i][random];
+                                      var maxIndex = 0;
+                                      // eslint-disable-next-line
+                                      for (var k = 0; k < distances.length; k++) {
+                                        if (distances[k] !== undefined && (distances[maxIndex] === undefined || distances[k] > distances[maxIndex])) {
+                                          maxIndex = k;
+                                        }
+                                      }
 
-                                      afterSparsifyPointId[0][i][j] = beforeSparsifyPointId[0][i][random];
+                                      pointsAdded.push(maxIndex);
+                                      distances[maxIndex] = undefined;
+                                    }
 
-                                      randNums.push(random);
+                                    // Farthest-First Algorithm Ends
+
+                                    // Pseudocode for Farthest-First algorithm seen above
+                                    /*
+                                      var random = integer between 0 and the number of points in cluster 'i'
+                                      var pointsAdded = new array with random as the only values
+                                      var distances = currently empty array
+
+                                      Iterate through the loop rank[i] times {
+                                        Iterate through points of cluster 'i' {
+                                          if (point 'k' hasn't been added to pointsAdded yet) {
+                                            Find its distance 'newDistance' from the most recent point added to pointsAdded
+
+                                            if (newDistance is smaller than the current closest distance to point 'k') {
+                                              Set newDistance as the value at distances[k]
+                                            }
+                                          }
+                                        }
+
+                                        Find the index 'maxIndex' with the max value in the array 'distances'
+                                        Add 'maxIndex' to pointsAdded
+                                        Set distances[maxIndex] to undefined
+                                      }
+                                    */
+
+                                    // eslint-disable-next-line
+                                    for (var j = 0; j < pointsAdded.length; j++) {
+                                        afterSparsifyX[0][i][j] = beforeSparsifyX[0][i][pointsAdded[j]];
+                                        afterSparsifyY[0][i][j] = beforeSparsifyY[0][i][pointsAdded[j]];
+                                        afterSparsifyZ[0][i][j] = beforeSparsifyZ[0][i][pointsAdded[j]];
+
+                                        afterSparsifyPointId[0][i][j] = beforeSparsifyPointId[0][i][pointsAdded[j]];
                                     }
                                   } else {
                                     // eslint-disable-next-line
@@ -246,19 +295,10 @@ class App extends React.Component {
                                       afterSparsifyPointId[0][i][j] = beforeSparsifyPointId[0][i][j];
                                     }
                                   }
-
-                                  // console.log(i + ", " + rank[i] + ", " + afterSparsifyX[0][i].length);
-                                  // console.log(afterSparsifyX[0][i]);
                                 }
-
-
 
                                 console.timeEnd("Initial Plot View");
                                 console.time("All Plot Views");
-
-                                // console.log(x[0]);
-                                // console.log(beforeSparsifyX[0]);
-                                // console.log(afterSparsifyX[0]);
 
                                 //eslint-disable-next-line
                                 for (var i = 1; i < lvlToId.length; i++) {
@@ -321,28 +361,96 @@ class App extends React.Component {
                                         afterSparsifyPointId[i][j] = [];
 
                                         if (rank[j] !== size[j]) {
-                                          // eslint-disable-next-line
-                                          var randNums = [];
-                                          for (var k = 0; k < rank[j]; k++) {
-                                            // eslint-disable-next-line
-                                            var exists = true;
-                                            // eslint-disable-next-line
-                                            var random;
+                                          // Farthest-First Algorithm Begins
 
-                                            while(exists) {
-                                              random = (Math.random()*(beforeSparsifyX[i][j].length-1)+1) | 0;
-                                              if (!randNums.includes(random) && beforeSparsifyX[i][j][random] !== undefined && beforeSparsifyX[i][j][random] !== null) {
-                                                exists = false;
+                                          // eslint-disable-next-line
+                                          var random = (Math.random()*(beforeSparsifyX[i][j].length)) | 0;
+
+                                          // eslint-disable-next-line
+                                          var pointsAdded = [random];
+
+                                          // eslint-disable-next-line
+                                          var distances = [];
+                                          distances[random] = undefined;
+
+                                          // eslint-disable-next-line
+                                          for (var k = 1; k < rank[j]; k++) {
+                                            for (var l = 0; l < beforeSparsifyX[i][j].length; l++) {
+                                              if (!pointsAdded.includes(l)) {
+                                                // eslint-disable-next-line
+                                                var prevIndex = pointsAdded[k-1];
+                                                // eslint-disable-next-line
+                                                var prevX = beforeSparsifyX[i][j][prevIndex];
+                                                // eslint-disable-next-line
+                                                var prevY = beforeSparsifyY[i][j][prevIndex];
+                                                // eslint-disable-next-line
+                                                var prevZ = beforeSparsifyZ[i][j][prevIndex];
+
+                                                // eslint-disable-next-line
+                                                var currX = beforeSparsifyX[i][j][l];
+                                                // eslint-disable-next-line
+                                                var currY = beforeSparsifyY[i][j][l];
+                                                // eslint-disable-next-line
+                                                var currZ = beforeSparsifyZ[i][j][l];
+
+                                                // eslint-disable-next-line
+                                                var newDistance = Math.sqrt(Math.pow(currX-prevX, 2) + Math.pow(currY-prevY, 2) + Math.pow(currZ-prevZ, 2));
+                                                if (distances[l] !== null && distances[l] !== undefined) {
+                                                  distances[l] = Math.min(distances[l], newDistance);
+                                                } else {
+                                                  distances[l] = newDistance;
+                                                }
                                               }
                                             }
 
-                                            afterSparsifyX[i][j][k] = beforeSparsifyX[i][j][random];
-                                            afterSparsifyY[i][j][k] = beforeSparsifyY[i][j][random];
-                                            afterSparsifyZ[i][j][k] = beforeSparsifyZ[i][j][random];
+                                            // eslint-disable-next-line
+                                            var maxIndex = 0;
 
-                                            afterSparsifyPointId[i][j][k] = beforeSparsifyPointId[i][j][random];
-                                            randNums.push(random);
+                                            // eslint-disable-next-line
+                                            for (var l = 0; l < distances.length; l++) {
+                                              if (distances[l] !== undefined && (distances[maxIndex] === undefined || distances[l] > distances[maxIndex])) {
+                                                maxIndex = l;
+                                              }
+                                            }
+
+                                            pointsAdded.push(maxIndex);
+                                            distances[maxIndex] = undefined;
                                           }
+
+                                          // eslint-disable-next-line
+                                          for (var k = 0; k < pointsAdded.length; k++) {
+                                              afterSparsifyX[i][j][k] = beforeSparsifyX[i][j][pointsAdded[k]];
+                                              afterSparsifyY[i][j][k] = beforeSparsifyY[i][j][pointsAdded[k]];
+                                              afterSparsifyZ[i][j][k] = beforeSparsifyZ[i][j][pointsAdded[k]];
+
+                                              afterSparsifyPointId[i][j][k] = beforeSparsifyPointId[i][j][pointsAdded[k]];
+                                          }
+
+                                          // Farthest-First Algorithm Ends
+
+                                          // Pseudocode for Farthest-First algorithm seen above
+                                          /*
+                                            var random = integer between 0 and the number of points in cluster 'j'
+                                            var pointsAdded = new array with random as the only values
+                                            var distances = currently empty array
+
+                                            Iterate through the loop rank[j] times {
+                                              Iterate through points of cluster 'j' {
+                                                if (point 'l' hasn't been added to pointsAdded yet) {
+                                                  Find its distance 'newDistance' from the most recent point added to pointsAdded
+
+                                                  if (newDistance is smaller than the current closest distance to point 'l') {
+                                                    Set newDistance as the value at distances[l]
+                                                  }
+                                                }
+                                              }
+
+                                              Find the index 'maxIndex' with the max value in the array 'distances'
+                                              Add 'maxIndex' to pointsAdded
+                                              Set distances[maxIndex] to undefined
+                                            }
+                                          */
+
                                         } else {
                                           // eslint-disable-next-line
                                           for (var k = 0; k < beforeSparsifyX[i][j].length; k++) {
@@ -372,16 +480,7 @@ class App extends React.Component {
                                     beforeSparsifyPointId[1] = beforeSparsifyPointId[0];
                                     afterSparsifyPointId[1] = afterSparsifyPointId[0];
                                   }
-
-                                  // console.log(afterSparsifyX[i]);
                                 }
-
-                                // console.log(beforeSparsifyX);
-                                // console.log(beforeSparsifyY);
-                                // console.log(beforeSparsifyZ);
-                                // console.log(afterSparsifyX);
-                                // console.log(afterSparsifyY);
-                                // console.log(afterSparsifyZ);
 
                                 console.timeEnd("All Plot Views");
                                 console.time("Plot Traces");
@@ -396,10 +495,8 @@ class App extends React.Component {
 
                                     if (name[j].includes("not_fault")) {
                                       tempName = "Cluster"
-                                      //tempColor = '#'+Math.floor(Math.random()*700000+1000000).toString(16);
                                     } else {
                                       tempName = "Fault"
-                                      //tempColor = '#'+Math.floor(Math.random()*700000+16000000).toString(16);
                                     }
 
                                     if (idToLvl[j] >= i) {
@@ -407,7 +504,6 @@ class App extends React.Component {
                                         var trace = { // each trace is one cluster
                                           x: x[i][j], y: y[i][j], z: z[i][j], // provides array of x,y,z coordinates for the points in each cluster
                                           mode: 'markers',
-                                          //legendgroup: 'Level ' + idToLvl[i],
                                           marker: {
                                             size: self.state.markerSize,
                                             symbol: 'circle',
@@ -434,16 +530,19 @@ class App extends React.Component {
                                         if (stats[j] !== undefined) {
                                           var statsX = Array.apply(null, {length: stats[j].length}).map(Number.call, Number);
 
+                                          // Uncomment below to normalize x-axis of 'Diagonal of R' Plot
+                                          /*
                                           // eslint-disable-next-line
-                                          // for (var k = 0; k < statsX.length; k++) {
-                                          //   statsX[k]/=(statsX.length-1);
-                                          // }
+                                          for (var k = 0; k < statsX.length; k++) {
+                                             statsX[k]/=(statsX.length-1);
+                                          }
+                                          */
 
                                           var statsTrace = {
                                             x: statsX,
                                             y: stats[j],
                                             hoverinfo: 'text',
-                                            hovertext: Array(stats[j].length).fill(tempName + " " + j + "<br>Size: " + size[j]  + "<br>Level: " + idToLvl[j]),
+                                            hovertext: Array(stats[j].length).fill(tempName + " " + j + "<br>Size: " + size[j]  + "<br>Rank: " + rank[j] + "<br>Level: " + idToLvl[j]),
                                             line: {
                                               color: tempColor,
                                             },
@@ -464,7 +563,6 @@ class App extends React.Component {
                                         var beforeSparsifyTrace = {
                                           x: beforeSparsifyX[i][j], y: beforeSparsifyY[i][j], z: beforeSparsifyZ[i][j], // provides array of x,y,z coordinates for the points in each cluster
                                           mode: 'markers',
-                                          //legendgroup: 'Level ' + idToLvl[i],
                                           marker: {
                                             size: self.state.markerSize,
                                             symbol: 'circle',
@@ -493,7 +591,6 @@ class App extends React.Component {
                                         var afterSparsifyTrace = {
                                           x: afterSparsifyX[i][j], y: afterSparsifyY[i][j], z: afterSparsifyZ[i][j], // provides array of x,y,z coordinates for the points in each cluster
                                           mode: 'markers',
-                                          //legendgroup: 'Level ' + idToLvl[i],
                                           marker: {
                                             size: self.state.markerSize,
                                             symbol: 'circle',
@@ -520,10 +617,6 @@ class App extends React.Component {
                                     }
                                   }
                                 }
-
-                                // console.log(self.state.traces);
-                                // console.log(self.state.beforeSparsifyTraces);
-                                // console.log(self.state.afterSparsifyTraces);
 
                                 console.timeEnd("Plot Traces");
                                 console.time("Adjacency List");
@@ -562,15 +655,6 @@ class App extends React.Component {
     this.loadPlot();
     window.addEventListener('resize', this.updateWindowDimensions);
   }
-
-  // componentDidUpdate() {
-  //   if (this.state.traces[this.state.level] !== null && this.state.traces[this.state.level].length !== 0 && this.state.traces[this.state.level] !== undefined && this.state.leveltoId !== [[]] && this.state.leveltoId !== undefined) {
-  //     setTimeout(function () {
-  //       console.timeEnd("Generated Plot");
-  //       console.groupEnd();
-  //     });
-  //   }
-  // }
 
   componentWillUnmount() {
     window.removeEventListener('resize', this.updateWindowDimensions);
@@ -795,7 +879,7 @@ class App extends React.Component {
           }
         }
 
-        /* pseudocode for the above algorithm
+        /* Pseudocode for the above algorithm
 
         Iterate through the list of IDs in the current cluster (currCluster) {
           currId = pointId[i]
@@ -932,7 +1016,7 @@ class App extends React.Component {
             }
           }
 
-          /* pseudocode for above triangle counting
+          /* Pseudocode for above triangle counting
 
           Iterate through the list of IDs in the current cluster (currCluster) {
             currId = pointId[i]
@@ -1093,12 +1177,23 @@ class App extends React.Component {
         // eslint-disable-next-line
         this.state.traces[this.state.level][i].visible = false;
       }
+      if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
+        // eslint-disable-next-line
+        this.state.beforeSparsifyTraces[this.state.level][i].visible = false;
+      }
+      if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
+        // eslint-disable-next-line
+        this.state.afterSparsifyTraces[this.state.level][i].visible = false;
+      }
       if (this.state.statsTraces[this.state.level][i] !== undefined && this.state.statsTraces[this.state.level][i].name !== event.points[0].data.name) {
         // eslint-disable-next-line
         this.state.statsTraces[this.state.level][i].visible = false;
       }
     }
 
+    this.setState({traces: this.state.traces});
+    this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
+    this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
     this.setState({stateTraces: this.state.stateTraces});
   }
 
@@ -1109,13 +1204,23 @@ class App extends React.Component {
         // eslint-disable-next-line
         this.state.traces[this.state.level][i].visible = true;
       }
-
+      if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined) {
+        // eslint-disable-next-line
+        this.state.beforeSparsifyTraces[this.state.level][i].visible = true;
+      }
+      if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined) {
+        // eslint-disable-next-line
+        this.state.afterSparsifyTraces[this.state.level][i].visible = true;
+      }
       if (this.state.statsTraces[this.state.level][i] !== undefined) {
         // eslint-disable-next-line
         this.state.statsTraces[this.state.level][i].visible = true;
       }
     }
 
+    this.setState({traces: this.state.traces});
+    this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
+    this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
     this.setState({statsTraces: this.state.statsTraces});
   }
 
@@ -1188,15 +1293,6 @@ class App extends React.Component {
         data = this.state.afterSparsifyTraces;
         currentSparsification = "After Sparsification";
       }
-
-      // for (var i = 0; i < tempData.length; i++) {
-      //   data[i] = [];
-      //   for (var j = 0; j < tempData[i].length; j++) {
-      //     data[i][j] = tempData[i][j]
-      //   }
-      // }
-
-      // console.log(data);
 
       return ( // code below is in JSX
         <div>
@@ -1284,7 +1380,6 @@ class App extends React.Component {
                   Enter Cluster: <input type="number" value={this.state.currCluster} onChange={this.updateCurrCluster.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
                   <button onClick={this.showSurfaceButton.bind(this)}>Show Surface</button>
-                  {/*<button onClick={this.showApproximateSurface.bind(this)}>Show Approximate Surface</button>*/}
                   <br/>
                   <br/>
                   Click Surface to Remove:

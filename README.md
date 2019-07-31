@@ -24,15 +24,15 @@ This visualization tool helps understand [sparsified nested dissection](https://
 ## <a name="setup-instructions"></a>Setup Instructions
 
 Dependencies:
-* [React](https://github.com/facebook/react)
-* [React-Plotly](https://github.com/plotly/react-plotly.js/)
-* [Plotly](https://github.com/plotly/plotly.js/)
-* [D3](https://github.com/d3/d3)
+* [React](https://www.npmjs.com/package/react)
+* [React-Plotly](https://www.npmjs.com/package/react-plotly.js)
+* [Plotly GL3D](https://www.npmjs.com/package/plotly.js-gl3d-dist)
+* [D3](https://www.npmjs.com/package/d3)
 
 In the project directory, run:
 
 #### `npm install`
-#### `npm install react react-plotly.js plotly.js d3`
+#### `npm install react react-plotly.js plotly.js-gl3d-dist d3`
 #### `npm install -g firebase-tools`
 #### `firebase login`
 

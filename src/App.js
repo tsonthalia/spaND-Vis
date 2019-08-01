@@ -625,7 +625,12 @@ class App extends React.Component {
 
                                 // eslint-disable-next-line
                                 for (var i = 0; i < adjacencyData.length; i++) {
-                                  adjacencyList[adjacencyData[i].id] = adjacencyData[i].nbrs.split(' ');
+                                  var tempAdjacencyListEntry = adjacencyData[i].nbrs.split(' ');
+                                  adjacencyList[adjacencyData[i].id] = [];
+                                  // eslint-disable-next-line
+                                  for (var j = 0; j < tempAdjacencyListEntry.length; j++) {
+                                    adjacencyList[adjacencyData[i].id][j] = Number(tempAdjacencyListEntry[j]);
+                                  }
                                   adjacencyList[adjacencyData[i].id].pop();
                                 }
 
@@ -901,13 +906,14 @@ class App extends React.Component {
         }
 
         */
-
         connections.shift();
 
+
         console.timeEnd("Triangle Counting");
-        console.time("3D Mesh Trace");
+
 
         if (connections.length > 0) {
+          console.time("3D Mesh Trace");
           var trace = { // creates a trace for the new surface with i,j,k values of the connections
             type: 'mesh3d',
             x: currCluster.x,
@@ -1004,11 +1010,11 @@ class App extends React.Component {
               if (adjacencyList[currId][j] > currId && pointId.includes(adjacencyList[currId][j])) {
                 for (var k = j+1; k < adjacencyList[currId].length; k++) {
                   if (adjacencyList[currId][k] > adjacencyList[currId][j] && pointId.includes(adjacencyList[currId][k]) && adjacencyList[adjacencyList[currId][j]].includes(adjacencyList[currId][k])) {
-                    if (Number(currId) !== Number(adjacencyList[currId][j]) && currId !== Number(adjacencyList[currId][k]) && Number(adjacencyList[currId][j]) !== Number(adjacencyList[currId][k])) {
-                      connections.push([currId, Number(adjacencyList[currId][j]), Number(adjacencyList[currId][k])]);
+                    if (Number(currId) !== adjacencyList[currId][j] && currId !== adjacencyList[currId][k] && adjacencyList[currId][j] !== adjacencyList[currId][k]) {
+                      connections.push([currId, adjacencyList[currId][j], adjacencyList[currId][k]]);
                       connectionsT[0].push(prevToNewId[currId]);
-                      connectionsT[1].push(prevToNewId[Number(adjacencyList[currId][j])]);
-                      connectionsT[2].push(prevToNewId[Number(adjacencyList[currId][k])]);
+                      connectionsT[1].push(prevToNewId[adjacencyList[currId][j]]);
+                      connectionsT[2].push(prevToNewId[adjacencyList[currId][k]]);
                     }
                   }
                 }
@@ -1043,9 +1049,10 @@ class App extends React.Component {
         connections.shift();
 
         console.timeEnd("Triangle Counting");
-        console.time("3D Mesh Trace");
+
 
         if (connections.length > 0) {
+          console.time("3D Mesh Trace");
           var trace = {
             type: 'mesh3d',
             x: currCluster.x,
@@ -1067,13 +1074,15 @@ class App extends React.Component {
           self.state.traces[self.state.level].push(trace);
           self.state.toggledSurfaces.push(currCluster.name);
           self.state.toggledSurfaces.sort();
+
+          console.timeEnd("3D Mesh Trace");
         } else if (currCluster.name.includes("Fault")) {
           alert("No connections found. Faults are only connected to lower level points.");
         } else {
           alert("No connections found.");
         }
 
-        console.timeEnd("3D Mesh Trace");
+
         console.groupEnd();
         self.setState({traces: self.state.traces});
       } else {

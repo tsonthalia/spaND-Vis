@@ -68,6 +68,7 @@ class App extends React.Component {
                               d3.csv(folder + 'stats3d.csv').then(function(stats3dData) {
                                 //console.log(data);
                                 console.group("Initial Loading Sequence");
+                                console.time("Total");
                                 console.time("Merging Data");
                                 //console.log("Getting Merging Data...")
                                 //self.forceUpdate();
@@ -639,6 +640,7 @@ class App extends React.Component {
                                 self.state.adjacencyList = adjacencyList;
 
                                 console.timeEnd("Adjacency List");
+                                console.timeEnd("Total");
                                 console.groupEnd();
 
                                 self.setState({traces: self.state.traces});
@@ -843,7 +845,7 @@ class App extends React.Component {
 
       if (!alreadyPresent) { // if the surface doesn't exist yet
         console.group("Surface Over " + currCluster.name);
-
+        console.time("Total");
         var adjacencyList = self.state.adjacencyList;
         var pointId = currCluster.pointIds;
 
@@ -944,7 +946,7 @@ class App extends React.Component {
         } else {
           alert("No connections found.");
         }
-
+        console.timeEnd("Total");
         console.groupEnd();
 
         self.setState({traces: self.state.traces});
@@ -1268,7 +1270,7 @@ class App extends React.Component {
   }
 
   resetStatsTrace() {
-    console.log("Resetting Stats Traces");
+    console.time("Reset Stats Traces");
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       if (this.state.traces[this.state.level][i] !== undefined) {
         // eslint-disable-next-line
@@ -1297,9 +1299,12 @@ class App extends React.Component {
     this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
     this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
     this.setState({statsTraces: this.state.statsTraces});
+
+    console.timeEnd("Reset Stats Traces");
   }
 
   reset() {
+    console.time("Reset All");
     for (var i = 0; i < this.state.traces.length; i++) {
       for (var j = 0; j < this.state.traces[i].length; j++) {
         if (this.state.traces[i][j] !== undefined) {
@@ -1353,6 +1358,8 @@ class App extends React.Component {
     this.setState({opacity: this.state.opacity});
     this.setState({markerSize: 5});
     this.setState({level: 0});
+
+    console.timeEnd("Reset All");
   }
 
   render() { // renders the webpage
@@ -1481,7 +1488,7 @@ class App extends React.Component {
                 <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
                 <div style={{display: this.state.tabs[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
-                  Tolerance: <input type="number" value={this.state.tolerance} min="0" max="1" step=".01" onChange={this.updateTolerance.bind(this)} style={{width: 50 + "px"}}/>
+                  Tolerance: <input type="number" value={this.state.tolerance} min="0" max="1" step="any" onChange={this.updateTolerance.bind(this)} style={{width: 50 + "px"}}/>
                   <br/>
                   <button onClick={this.showToleranceButton.bind(this)}>Show Tolerance</button>
 

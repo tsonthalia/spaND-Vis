@@ -35,7 +35,7 @@ class App extends React.Component {
       rank: [], //array of ranks of each cluster
       size: [], //array of size of each cluster
       sparsified: 0, //value of sparsify cluster
-      tolerance: 0.5,
+      tolerance: 0.1,
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);

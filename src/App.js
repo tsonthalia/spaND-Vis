@@ -35,6 +35,7 @@ class App extends React.Component {
       rank: [], //array of ranks of each cluster
       size: [], //array of size of each cluster
       sparsified: 0, //value of sparsify cluster
+      tolerance: 0.5,
     }
 
     this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
@@ -67,6 +68,7 @@ class App extends React.Component {
                               d3.csv(folder + 'stats3d.csv').then(function(stats3dData) {
                                 //console.log(data);
                                 console.group("Initial Loading Sequence");
+                                console.time("Total");
                                 console.time("Merging Data");
                                 //console.log("Getting Merging Data...")
                                 //self.forceUpdate();
@@ -549,6 +551,7 @@ class App extends React.Component {
                                             name: tempName + ' ' + j + ' (Level ' + idToLvl[j] + ')', // e.g Cluster 5 (Level 0)
                                             id: idToLvl[j],
                                             mode: 'lines',
+                                            visible: true,
                                           }
 
                                           if (self.state.statsTraces[i] === undefined) {
@@ -637,6 +640,7 @@ class App extends React.Component {
                                 self.state.adjacencyList = adjacencyList;
 
                                 console.timeEnd("Adjacency List");
+                                console.timeEnd("Total");
                                 console.groupEnd();
 
                                 self.setState({traces: self.state.traces});
@@ -841,7 +845,7 @@ class App extends React.Component {
 
       if (!alreadyPresent) { // if the surface doesn't exist yet
         console.group("Surface Over " + currCluster.name);
-
+        console.time("Total");
         var adjacencyList = self.state.adjacencyList;
         var pointId = currCluster.pointIds;
 
@@ -942,7 +946,7 @@ class App extends React.Component {
         } else {
           alert("No connections found.");
         }
-
+        console.timeEnd("Total");
         console.groupEnd();
 
         self.setState({traces: self.state.traces});
@@ -1125,6 +1129,63 @@ class App extends React.Component {
     this.setState({traces: this.state.traces});
   }
 
+  updateTolerance(event) {
+    this.setState({tolerance: event.target.value});
+  }
+
+  showToleranceButton(event) {
+    var maxLength = 0;
+    var pointsAbove = 0;
+    var pointsBelow = 0;
+
+    for (var i = 0; i < this.state.statsTraces[this.state.level].length; i++) {
+      var selectedCluster = this.state.statsTraces[this.state.level][i];
+
+      if (selectedCluster.name.includes("Dividing Line")) {
+        this.state.statsTraces[this.state.level].splice(i, 1);
+        i--;
+      }
+
+      else if (selectedCluster.visible === true) {
+        if (this.state.statsTraces[this.state.level][i].x.length > maxLength) {
+          maxLength = this.state.statsTraces[this.state.level][i].x.length;
+        }
+
+        var currPointsAbove = 0;
+        var currPointsBelow = 0;
+        for (var j = 0; j < selectedCluster.y.length; j++) {
+          if (selectedCluster.y[j] > Number(this.state.tolerance)) {
+            currPointsAbove++;
+          } else {
+            currPointsBelow = (selectedCluster.y.length - currPointsAbove);
+            break;
+          }
+        }
+        pointsAbove+=currPointsAbove;
+        pointsBelow+=currPointsBelow;
+      }
+    }
+
+    var dividingLine = {
+      type: 'line',
+      xref: 'paper',
+      x: [0, maxLength-1],
+      y: [Number(this.state.tolerance), Number(this.state.tolerance)],
+      line: {
+        color: 'rgb(50, 171, 96)',
+        width: 4,
+        dash: 'dash'
+      },
+      name: "Dividing Line at " + this.state.tolerance,
+      hoverinfo: "text",
+      hovertext: Array(2).fill("Dividing Line at " + this.state.tolerance + "<br>Points Above: " + pointsAbove + "<br>Points Below: " + pointsBelow),
+    }
+
+    this.state.statsTraces[this.state.level].push(dividingLine);
+
+    this.setState({statsTraces: this.state.statsTraces});
+  }
+
   changeSize(event) { // when size slider is moved
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       // eslint-disable-next-line
@@ -1180,34 +1241,36 @@ class App extends React.Component {
   }
 
   showStatsTrace(event) {
-    console.log("Isolating " + event.points[0].data.name);
-    for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
-      if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].name !== undefined && this.state.traces[this.state.level][i].name !== event.points[0].data.name) {
-        // eslint-disable-next-line
-        this.state.traces[this.state.level][i].visible = false;
+    if (!event.points[0].data.name.includes("Dividing Line")) {
+      console.log("Isolating " + event.points[0].data.name);
+      for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
+        if (this.state.traces[this.state.level][i] !== undefined && this.state.traces[this.state.level][i].name !== undefined && this.state.traces[this.state.level][i].name !== event.points[0].data.name) {
+          // eslint-disable-next-line
+          this.state.traces[this.state.level][i].visible = false;
+        }
+        if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
+          // eslint-disable-next-line
+          this.state.beforeSparsifyTraces[this.state.level][i].visible = false;
+        }
+        if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
+          // eslint-disable-next-line
+          this.state.afterSparsifyTraces[this.state.level][i].visible = false;
+        }
+        if (this.state.statsTraces[this.state.level][i] !== undefined && this.state.statsTraces[this.state.level][i].name !== event.points[0].data.name) {
+          // eslint-disable-next-line
+          this.state.statsTraces[this.state.level][i].visible = false;
+        }
       }
-      if (this.state.beforeSparsifyTraces[this.state.level][i] !== undefined && this.state.beforeSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
-        // eslint-disable-next-line
-        this.state.beforeSparsifyTraces[this.state.level][i].visible = false;
-      }
-      if (this.state.afterSparsifyTraces[this.state.level][i] !== undefined && this.state.afterSparsifyTraces[this.state.level][i].name !== event.points[0].data.name) {
-        // eslint-disable-next-line
-        this.state.afterSparsifyTraces[this.state.level][i].visible = false;
-      }
-      if (this.state.statsTraces[this.state.level][i] !== undefined && this.state.statsTraces[this.state.level][i].name !== event.points[0].data.name) {
-        // eslint-disable-next-line
-        this.state.statsTraces[this.state.level][i].visible = false;
-      }
-    }
 
-    this.setState({traces: this.state.traces});
-    this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
-    this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
-    this.setState({stateTraces: this.state.stateTraces});
+      this.setState({traces: this.state.traces});
+      this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
+      this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
+      this.setState({stateTraces: this.state.stateTraces});
+    }
   }
 
   resetStatsTrace() {
-    console.log("Resetting Stats Traces");
+    console.time("Reset Stats Traces");
     for (var i = 0; i < this.state.traces[this.state.level].length; i++) {
       if (this.state.traces[this.state.level][i] !== undefined) {
         // eslint-disable-next-line
@@ -1224,6 +1287,11 @@ class App extends React.Component {
       if (this.state.statsTraces[this.state.level][i] !== undefined) {
         // eslint-disable-next-line
         this.state.statsTraces[this.state.level][i].visible = true;
+
+        if (this.state.statsTraces[this.state.level][i].name.includes("Dividing Line")) {
+          this.state.statsTraces[this.state.level].splice(i, 1);
+          i--;
+        }
       }
     }
 
@@ -1231,9 +1299,12 @@ class App extends React.Component {
     this.setState({beforeSparsifyTraces: this.state.beforeSparsifyTraces});
     this.setState({afterSparsifyTraces: this.state.afterSparsifyTraces});
     this.setState({statsTraces: this.state.statsTraces});
+
+    console.timeEnd("Reset Stats Traces");
   }
 
   reset() {
+    console.time("Reset All");
     for (var i = 0; i < this.state.traces.length; i++) {
       for (var j = 0; j < this.state.traces[i].length; j++) {
         if (this.state.traces[i][j] !== undefined) {
@@ -1241,6 +1312,11 @@ class App extends React.Component {
           this.state.traces[i][j].marker.opacity = event.target.value;
           // eslint-disable-next-line
           this.state.traces[i][j].visible = true;
+
+          if (this.state.traces[i][j].name.includes('highlight')) {
+            this.state.traces[i].splice(j, 1);
+            j--;
+          }
         }
 
         if (this.state.beforeSparsifyTraces[i][j] !== undefined) {
@@ -1260,11 +1336,11 @@ class App extends React.Component {
         if (this.state.statsTraces[i][j] !== undefined) {
           // eslint-disable-next-line
           this.state.statsTraces[i][j].visible = true;
-        }
 
-        if (this.state.traces[i][j].name.includes('highlight')) {
-          this.state.traces[i].splice(j, 1);
-          j--;
+          if (this.state.statsTraces[i][j].name.includes("Dividing Line")) {
+            this.state.statsTraces[i].splice(j, 1);
+            j--;
+          }
         }
       }
 
@@ -1282,6 +1358,8 @@ class App extends React.Component {
     this.setState({opacity: this.state.opacity});
     this.setState({markerSize: 5});
     this.setState({level: 0});
+
+    console.timeEnd("Reset All");
   }
 
   render() { // renders the webpage
@@ -1410,6 +1488,13 @@ class App extends React.Component {
                 <button id="2" style={{background: 'none', color: 'inherit', border: 'none', padding: 0, font: 'inherit', cursor: 'pointer', outline: 'inherit'}} onClick={this.toggleTab.bind(this)}>&#9654; Advanced Tools</button>
                 <br/>
                 <div style={{display: this.state.tabs[2], marginLeft: 30 + "px", marginTop: 5 + "px"}}>
+                  Tolerance: <input type="number" value={this.state.tolerance} min="0" max="1" step="any" onChange={this.updateTolerance.bind(this)} style={{width: 50 + "px"}}/>
+                  <br/>
+                  <button onClick={this.showToleranceButton.bind(this)}>Show Tolerance</button>
+
+                  <br/>
+                  <br/>
+
                   Marker Size: {this.state.markerSize}
                   <br/>
                   <input type="range" min="1" max="20" value={this.state.markerSize} className="slider" id="myRange" onChange={this.changeSize.bind(this)}/>

@@ -11,9 +11,10 @@ This new 3D visualization tool is built using React.js and Plotly.js. The websit
 2. [Main Plot](#main-plot)
 3. [Diagonal of R Plot](#diagonal-of-r-plot)
 4. [Sidebar](#sidebar)
-5. [Considerations](#considerations)
-6. [Future Improvements](#future-improvements)
-7. [Useful References](#useful-references)
+5. [Code](#code)
+6. [Considerations](#considerations)
+7. [Future Improvements](#future-improvements)
+8. [Useful References](#useful-references)
 
 ***
 
@@ -197,6 +198,253 @@ This plot shows how the rank changes over a number of “steps”.
     <td>
       <ul>
         <li>resets everything to its starting position</li>
+      </ul>
+    </td>
+  </tr>
+</table>
+
+***
+
+<a name="code"></a>
+## Code
+<table>
+  <tr>
+    <th>Function</th>
+    <th>Description</th>
+  </tr>
+  
+  <tr>
+    <td>constructor</td>
+    <td>
+      <ul>
+        <li>establishes the state object</li>
+        <li>calls the updateWindowDimension() and loadPlot() functions</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>loadPlot</td>
+    <td>
+      <ul>
+        <li>gets all the data from the files in public/data/</li>
+        <li>adds the data to the state object</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>componentDidMount</td>
+    <td>
+      <ul>
+        <li>this function is called once everything on the page is rendered</li>
+        <li>sets up an event listener that calls updateWindowDimensions() when the screen is resized</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>componentWillUnmount</td>
+    <td>
+      <ul>
+        <li>this function is called once the page is closed</li>
+        <li>removes the event listener that calls updateWindowDimensions() when the screen is resized</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>updateWindowDimensions</td>
+    <td>
+      <ul>
+        <li>sets the state.width and state.height variables to the window width and height respectively</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>toggleTab</td>
+    <td>
+      <ul>
+        <li>opens and closes the sidebar tabs (e.g. Levels, Surfaces, Advanced Tools)</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>changeLevel</td>
+    <td>
+      <ul>
+        <li>this function is called when the level slider is moved</li>
+        <li>sets the state.level variable to the slider value</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>sparsify</td>
+    <td>
+      <ul>
+        <li>this function is called when the sparsify slider is moved</li>
+        <li>sets the state.sparsified variable to the slider value (0 = all data, 1 = before sparsification, 2 = after sparsification)</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>toggleLevel</td>
+    <td>
+      <ul>
+        <li>this function is called when the levels under the "Show Levels" section are clicked</li>
+        <li>goes through the traces and hides the traces of a specific level if they were being shown before</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>plotClicked</td>
+    <td>
+      <ul>
+        <li>this function is called when the Main Plot is clicked</li>
+        <li>calls the showSurfaceOnClick() function</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>updateCurrCluster</td>
+    <td>
+      <ul>
+        <li>this function is called when the value in the text field next to "Enter Cluster:" is changed</li>
+        <li>sets the state.currCluster value to the new value in the text field</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>showSurfaceButton</td>
+    <td>
+      <ul>
+        <li>this function is called when the "Show Surface" button is clicked</li>
+        <li>hides/shows the surface for the cluster number that is stored as state.currCluster</li>
+        <li>finds triangular connections between different points using the adjacency list</li>
+        <li>plots a 3D Mesh Plot based on the triangular connections</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>showSurfaceOnClick</td>
+    <td>
+      <ul>
+        <li>this function is called when a point is clicked on the Main Plot</li>
+        <li>hides/shows the surface for the cluster number of the point that was clicked</li>
+        <li>finds triangular connections between different points using the adjacency list</li>
+        <li>plots a 3D Mesh Plot based on the triangular connections</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>removeSurface</td>
+    <td>
+      <ul>
+        <li>this function is called when a cluster name under "Click Surface to Remove" is clicked</li>
+        <li>goes through the array of traces and removes the cluster surface with the same name as the text that was clicked</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>updateTolerance</td>
+    <td>
+      <ul>
+        <li>this function is called when the value in the text field next to "Tolerance:" is changed</li>
+        <li>sets the state.tolerance value to the new value in the text field</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>showToleranceButton</td>
+    <td>
+      <ul>
+        <li>this function is called when the "Show Tolerance" button is clicked</li>
+        <li>draws a horizontal dashed line with the y-coordinate as the value from state.tolerance</li>
+        <li>finds how many points are above and how many are below the dashed line</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>changeSize</td>
+    <td>
+      <ul>
+        <li>this function is called when the marker size slider is moved</li>
+        <li>changes the size of the scatter3d points on the Main Plot</li>
+        <li>sets the state.markerSize variable to the slider value</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>changeOpacity</td>
+    <td>
+      <ul>
+        <li>this function is called when one of the opacity sliders is moved</li>
+        <li>sets the opacity of all points at "slider level" to the slider value</li>
+        <li>sets the state.opacity["slider level"] value to the slider value</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>toggleRDiag</td>
+    <td>
+      <ul>
+        <li>this function is called when the "Diagonal of R Plot" button is clicked</li>
+        <li>toggles the visibility of the Diagonal of R Plot</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>showStatsTrace</td>
+    <td>
+      <ul>
+        <li>this function is called when a line is clicked on the Diagonal of R Plot</li>
+        <li>goes through all of the stats traces and hides the ones that don't have the same name as the one that was clicked</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>resetStatsTrace</td>
+    <td>
+      <ul>
+        <li>this function is called when the Diagonal of R Plot is double clicked</li>
+        <li>resets the Diagonal of R Plot to its original state</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>reset</td>
+    <td>
+      <ul>
+        <li>this function is called when the "Reset" button is clicked</li>
+        <li>resets everything on the page to what it looked like when the page was first loaded</li>
+      </ul>
+    </td>
+  </tr>
+  
+  <tr>
+    <td>render</td>
+    <td>
+      <ul>
+        <li>this function is called by the parent file "index.js"</li>
+        <li>returns JSX code which is converted into HTML by React</li>
+        <li>draws the 2 plots and the sidebar</li>
       </ul>
     </td>
   </tr>

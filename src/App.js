@@ -35,17 +35,17 @@ class App extends React.Component {
       rank: [], //array of ranks of each cluster
       size: [], //array of size of each cluster
       sparsified: 0, //value of sparsify cluster
-      tolerance: 0.1,
+      tolerance: 0.1, //tolerance on the Diagonal of R Plot
     }
 
-    this.updateWindowDimensions = this.updateWindowDimensions.bind(this);
-    this.loadPlot = this.loadPlot.bind(this);
+    this.updateWindowDimensions = this.updateWindowDimensions.bind(this); //updates Window Dimensions so that the plot can resize properly
+    this.loadPlot = this.loadPlot.bind(this); //loads the plot data
   }
 
   loadPlot() { //loads all of the information that the plot needs
     let self = this; //'this' is undefined in an XMLHttpRequest, so another variable must hold the value so that 'this' can be used
 
-    var folder = this.state.folder;
+    var folder = this.state.folder; //gets the folder location from the state object
     var merging3d = new XMLHttpRequest();
     merging3d.open("GET", folder + 'merging3d.txt', false); //creates get request for the text files of merging3d.txt
     merging3d.onreadystatechange = function ()
@@ -1134,30 +1134,30 @@ class App extends React.Component {
   }
 
   showToleranceButton(event) {
-    var maxLength = 0;
-    var pointsAbove = 0;
-    var pointsBelow = 0;
+    var maxLength = 0; //max length of all clusters
+    var pointsAbove = 0; //number of points above tolerance line
+    var pointsBelow = 0; //number of points below tolerance line
 
     for (var i = 0; i < this.state.statsTraces[this.state.level].length; i++) {
       var selectedCluster = this.state.statsTraces[this.state.level][i];
 
-      if (selectedCluster.name.includes("Dividing Line")) {
+      if (selectedCluster.name.includes("Dividing Line")) { //if a dividing lines already exists, remove it
         this.state.statsTraces[this.state.level].splice(i, 1);
         i--;
       }
 
-      else if (selectedCluster.visible === true) {
+      else if (selectedCluster.visible === true) { //if the cluster is currently visible on the page
         if (this.state.statsTraces[this.state.level][i].x.length > maxLength) {
           maxLength = this.state.statsTraces[this.state.level][i].x.length;
         }
 
-        var currPointsAbove = 0;
-        var currPointsBelow = 0;
+        var currPointsAbove = 0; //number of points above tolerance line for selected cluster
+        var currPointsBelow = 0; //number of points below tolerance line for selected cluster
         for (var j = 0; j < selectedCluster.y.length; j++) {
           if (selectedCluster.y[j] > Number(this.state.tolerance)) {
-            currPointsAbove++;
+            currPointsAbove++; //add to currPointsAbove
           } else {
-            currPointsBelow = (selectedCluster.y.length - currPointsAbove);
+            currPointsBelow = (selectedCluster.y.length - currPointsAbove); //add the remaining number of points to currPointsBelow
             break;
           }
         }
@@ -1166,7 +1166,7 @@ class App extends React.Component {
       }
     }
 
-    var dividingLine = {
+    var dividingLine = { //dividing line trace
       type: 'line',
       xref: 'paper',
       x: [0, maxLength-1],
@@ -1181,7 +1181,7 @@ class App extends React.Component {
       hovertext: Array(2).fill("Dividing Line at " + this.state.tolerance + "<br>Points Above: " + pointsAbove + "<br>Points Below: " + pointsBelow),
     }
 
-    this.state.statsTraces[this.state.level].push(dividingLine);
+    this.state.statsTraces[this.state.level].push(dividingLine); //adds dividing line to statsTraces
 
     this.setState({statsTraces: this.state.statsTraces});
   }
@@ -1370,6 +1370,7 @@ class App extends React.Component {
       var data;
       var currentSparsification;
 
+      //depending on the sparsification slider, it will choose which sparsification level to use
       if (this.state.sparsified === 0) {
         data = this.state.traces;
         currentSparsification = "All Data";
